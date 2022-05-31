@@ -29,8 +29,8 @@ Therefore a free and open vulnerability-handling tracker tool is needed. *VulnTr
 
 Both this prototype's frontend and backend are locally hosted and executed. 
 
-Backend:
+**Backend:**
 The UVDesk backend [was installed](https://computingforgeeks.com/setup-uvdesk-ticketing-system-on-ubuntu/) on an Ubuntu 18.04.6 LTS virtual machine. The UVDesk application was locally hosted at port 8080. Ngrok made it publicly accessible to the host computer running the virtual machine
 
-Frontend:
+**Frontend:**
 The Node.JS frontend was locally hosted and made API requests through Ngrok to the UVDesk application.
