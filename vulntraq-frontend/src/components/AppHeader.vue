@@ -8,7 +8,7 @@
 
             <!-- Right aligned nav items -->
             <b-navbar-nav class="ms-auto">
-                <b-button v-on:click="openSettings()" class="settings-button" style="background-color:transparent">
+                <b-button v-b-modal.modal-1 class="settings-button" style="background-color:transparent">
                     <b-icon icon="gear-fill" aria-hidden="true"></b-icon> 
                 </b-button>
             </b-navbar-nav>
@@ -16,6 +16,10 @@
             <div style="width: 20px;"/>
             
         </b-navbar>
+
+        <b-modal id="modal-1" title="BootstrapVue">
+            <p class="my-4">Hello from modal!</p>
+        </b-modal>
     </div>
 </template>
     
