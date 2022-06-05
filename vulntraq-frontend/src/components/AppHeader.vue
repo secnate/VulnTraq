@@ -8,11 +8,19 @@
 
             <!-- Right aligned nav items -->
             <b-navbar-nav class="ms-auto">
-                <b-button v-b-modal.modal-1 class="settings-button" style="background-color:transparent">
+
+                <!-- The Refresh button will be used for re-querying the backend for updated info -->
+                <b-button class="refresh-button" style="background-color:transparent; border-color: transparent;">
+                    <b-icon icon="arrow-clockwise" aria-hidden="true"></b-icon> 
+                </b-button>
+
+                <!-- Button for opening Settings Panel -->
+                <b-button v-b-modal.modal-1 class="settings-button" style="background-color:transparent; border-color: transparent;">
                     <b-icon icon="gear-fill" aria-hidden="true"></b-icon> 
                 </b-button>
             </b-navbar-nav>
 
+            <!-- Ensures that the right aligned nav items do not immediately touch right side of screen -->
             <div style="width: 20px;"/>
             
         </b-navbar>
@@ -22,6 +30,21 @@
         </b-modal>
     </div>
 </template>
+
+<script>
+
+export default {
+  name: 'AppHeader',
+  components: {
+  },
+  methods: {
+      openSettings: function openSettings() {
+          console.log("DEBUG: in open settings function");
+      }
+  }
+}
+
+</script>
     
 <style lang="scss">
 
@@ -52,18 +75,3 @@
 }
 
 </style>
-
-<script>
-
-export default {
-  name: 'AppHeader',
-  components: {
-  },
-  methods: {
-      openSettings: function openSettings() {
-          console.log("DEBUG: in open settings function");
-      }
-  }
-}
-
-</script>
