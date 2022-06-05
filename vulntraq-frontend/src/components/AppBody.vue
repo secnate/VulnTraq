@@ -6,12 +6,14 @@
       <!-- Ensures that the left aligned nav items do not immediately touch the left side of screen -->
       <div style="width: 10px;"/>
       <b-button class="reports-button" v-on:click="openReports()" style="background-color:transparent; border-color:transparent;">
-        See Reports
+        Open Reports
       </b-button>
 
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ms-auto">
-        <b-button v-b-modal.modal-1 class="addition-button" style="background-color:transparent; border-color: transparent;">
+        <b-button v-b-modal.modal-1 class="addition-button"
+                  v-b-tooltip.hover="'Create A New Vulnerability Ticket'" 
+                  style="background-color:transparent; border-color: transparent;">
           <b-icon icon="plus-circle" aria-hidden="true" class="settings-button-icon"></b-icon> 
         </b-button>
       </b-navbar-nav>
