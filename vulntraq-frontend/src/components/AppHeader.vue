@@ -12,6 +12,7 @@
                 <!-- The Refresh button will be used for re-querying the backend for updated info -->
                 <b-button class="refresh-button" 
                     v-b-tooltip.hover.leftbottom="'Get Updated Data From The Ticketing System'" 
+                    v-on:click="refreshData()"
                     id="refresh-button" style="background-color:transparent; border-color: transparent;">
                     <b-icon icon="arrow-clockwise" aria-hidden="true"></b-icon> 
                 </b-button>
@@ -44,6 +45,9 @@ export default {
   methods: {
       openSettings: function openSettings() {
           console.log("DEBUG: in open settings function");
+      },
+      refreshData: function refreshData() {
+          console.log("DEBUG: in refresh data function");
       }
   }
 }
