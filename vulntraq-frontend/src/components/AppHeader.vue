@@ -17,12 +17,6 @@
                     <b-icon icon="arrow-clockwise" aria-hidden="true"></b-icon> 
                 </b-button>
 
-                <!-- Button for opening Settings Panel -->
-                <b-button v-b-modal.modal-1 class="settings-button" 
-                    v-b-tooltip.hover.leftbottom="'Update System Settings'"
-                    style="background-color:transparent; border-color: transparent;">
-                    <b-icon icon="gear-fill" aria-hidden="true"></b-icon> 
-                </b-button>
             </b-navbar-nav>
 
             <!-- Ensures that the right aligned nav items do not immediately touch right side of screen -->
