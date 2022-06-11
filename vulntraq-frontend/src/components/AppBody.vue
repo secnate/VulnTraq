@@ -1,6 +1,5 @@
 <template>
-  <div class="body-holder">
-
+  <div class="body-holder" v-if="backend_is_up">
     <!-- The Ticket Information Pandel's Navigation Bar -->
     <b-navbar toggleable="lg" class="body-navbar">
 
@@ -58,11 +57,21 @@
       <h2>WE LOADED DATA!</h2>
       <h2>THIS PORTION WILL BE DONE LATER<br/>WHEN LINKING TO BACKEND</h2>
     </div>
-
+  </div>
+  <div class="body-holder" v-else>
+    <div class="ticket-information-body-info-section">
+      <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
+      <b-icon icon="exclamation-triangle-fill" scale="3" variant="warning"/>
+      <div style="height: 20px;"/> <!-- vertical padding offset -->
+      <h2>Backend Is Currently Not Acessible At</h2>
+      <h2>{{this.$backendURL}}</h2>
+    </div>
   </div>
 </template>
 
 <script>
+import store from '../store/store.js';
+
 export default {
   name: 'AppBody',
   props: {
@@ -70,12 +79,17 @@ export default {
   data() {
     return {
       vuln_ticket_list: [],
-      loading_vuln_ticket_information: false
+      loading_vuln_ticket_information: false,
     };
   },
   methods: {
       openReports: function openReports() {
           console.log("DEBUG: in openReports function");
+      }
+  },
+  computed: {
+      backend_is_up() {
+        return store.state.backend_available;
       }
   }
 }
@@ -92,7 +106,7 @@ export default {
   margin-left: 10%;
   margin-right: 10%;
   margin-top: 80px;
-  /* background-color: yellow; */
+  background-color: yellow;
 }
 
 /* 
@@ -100,7 +114,7 @@ export default {
 */
 .body-navbar {
   background-color: red;
-  height: 45px;
+  height: 50px;
   border-color: black;
   border-style: solid;
   border-radius: 5px;

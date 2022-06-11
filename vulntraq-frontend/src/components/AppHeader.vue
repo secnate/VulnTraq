@@ -31,21 +31,29 @@
 </template>
 
 <script>
+import checkBackendIsUp from '../backend-runup.js';
+import store from '../store/store.js';
 
 export default {
   name: 'AppHeader',
   components: {
   },
   methods: {
+      // Section for methods used to verify performing button-related action
       openSettings: function openSettings() {
           console.log("DEBUG: in open settings function");
       },
       refreshData: function refreshData() {
-          console.log("DEBUG: in refresh data function");
+        // Check if backend is online & accessible
+        checkBackendIsUp();
+      }
+  },
+  computed: {
+      backend_is_up() {
+        return store.state.backend_available;
       }
   }
 }
-
 </script>
     
 <style lang="scss">
