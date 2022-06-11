@@ -74,10 +74,4 @@ export default {
     padding-left: 20px;
     color: white;
 }
-
-// Styles the settings button
-.settings-button {
-    margin-right: 20px;
-}
-
 </style>
