@@ -18,7 +18,7 @@ Therefore a free and open vulnerability-handling tracker tool is needed. *VulnTr
 # Technology Stack
 
 ## Frontend:
-- Node.JS
+- Vue.JS
 
 ## Backend:
 
