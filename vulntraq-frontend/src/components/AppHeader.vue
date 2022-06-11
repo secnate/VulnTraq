@@ -39,12 +39,8 @@ export default {
   components: {
   },
   methods: {
-      // Section for methods used to verify performing button-related action
-      openSettings: function openSettings() {
-          console.log("DEBUG: in open settings function");
-      },
       refreshData: function refreshData() {
-        // Check if backend is online & accessible
+        // Checks if the backend is online & accessible
         checkBackendIsUp();
       }
   },
