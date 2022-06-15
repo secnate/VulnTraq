@@ -22,7 +22,7 @@ Therefore a free and open vulnerability-handling tracker tool is needed. *VulnTr
 
 ## Backend:
 
-- UVDesk: a free open-source ticketing system with [a robust API](https://github.com/uvdesk/api-bundle/wiki/Ticket-Related-APIs) and a MySQL database
+- UVDesk: a free open-source ticketing system with [a robust API](https://github.com/uvdesk/api-bundle) and a MySQL database
 - Ngrok: a free utility allowinglocally hosted application to be accessed with a publicly-accessible url
 
 ## Systems Engineering:
