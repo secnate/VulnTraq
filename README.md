@@ -18,19 +18,28 @@ Therefore a free and open vulnerability-handling tracker tool is needed. *VulnTr
 # Technology Stack
 
 ## Frontend:
-- Vue.JS
+- Vue.JS framework with Bootstrap Vue components
 
 ## Backend:
 
 - UVDesk: a free open-source ticketing system with [a robust API](https://github.com/uvdesk/api-bundle) and a MySQL database
-- Ngrok: a free utility allowinglocally hosted application to be accessed with a publicly-accessible url
+- Ngrok: a free utility allowing a locally hosted application to be accessed with a publicly-accessible url
 
-## Systems Engineering:
+## Prototype's System Design:
 
-Both this prototype's frontend and backend are locally hosted and executed. 
+Both this prototype's frontend and backend were locally hosted and executed for this prototype. 
 
 **Backend:**
-The UVDesk backend [was installed](https://computingforgeeks.com/setup-uvdesk-ticketing-system-on-ubuntu/) on an Ubuntu 18.04.6 LTS virtual machine. The UVDesk application was locally hosted at port 8080. Ngrok made it publicly accessible to the host computer running the virtual machine
+The UVDesk backend [was installed](https://computingforgeeks.com/setup-uvdesk-ticketing-system-on-ubuntu/) on an Ubuntu 18.04.6 LTS virtual machine. The UVDesk application was hosted within the server at http://localhost:8080. Ngrok made it publicly accessible to the host computer running the virtualized server
 
 **Frontend:**
 The Vue.JS frontend was locally hosted and made API requests through Ngrok to the UVDesk application.
+
+# Running The Prototype
+To run the frontend, go into the `vulntraq-frontend` folder in the command line and use the `npm run serve` command to display it within your computer's browser at the `http://localhost:8080` address.
+
+Open the server virtual machine and use Ngrok to reverse proxy it from the http://localhost:8080 to a publicly acessible URL.
+
+The frontend is then to communicate with the virtualized server using [UVDesk's API](https://github.com/uvdesk/api-bundle). The main issue is that sending REST API requests from a frontend running at http://localhost:8080 to the Ngrok-generated URL for accessing the backend creates _Cross-Origin Request Sharing_ errors.
+
+Given the project's nature, tight time constraints, and extensive efforts in addressing the problem systematically being unsuccessful, there was a need for a speedy workaround. Thankfully, one was found. It involves running the _VulnTraq_ application's frontend in the Chrome browser with [its same-origin policy temporarily disabled.](https://stackoverflow.com/a/42024918) This prevented such errors from firing on the REST API request -- and for project development to continue.
