@@ -20,8 +20,9 @@ Vue.config.productionTip = false;
 // It may need to change if the free version of Ngrok is used as a
 // reverse proxy in the virtualized backend server. This is because
 // Ngrok's free version does not result in a constant long-term URL
-Axios.defaults.baseURL = `https://7574-75-183-154-210.ngrok.io`;
-Vue.prototype.$backendURL = Axios.defaults.baseURL
+Axios.defaults.baseURL = `https://f900-75-183-154-210.ngrok.io`;
+Axios.defaults.headers.common['Authorization'] = "Basic YRG5T7XPKTXMPAIC0Y2LOXATXVDHKNG3AK3PFOCQR9YBNXTYRQCCQPSXLYBDJHXO";
+Vue.prototype.$backendURL = Axios.defaults.baseURL;
 
 // Mount the main vue object (event bus)
 execute(Vue)

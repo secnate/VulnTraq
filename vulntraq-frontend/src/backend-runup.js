@@ -13,17 +13,34 @@ export function checkBackendIsUp() {
         })
           .then((resp) => {
             console.log("Connected to backend");
-            resolve(resp);
+            
+            // Need to signal that we have the backend information available
             store.dispatch({
-              type: types.Set_Backend_Available
+              type: types.SET_BACKEND_AVAILABLE
             });
+
+            // Need to signal to retrieve all ticketing related information from backend
+            store.dispatch({
+              type: types.GET_TICKET_INFORMATION_FROM_BACKEND
+            });
+
+            resolve(resp);
           })
           .catch((err) => {
             console.log("Failed to connect to backend");
-            reject(err);
+
+            // Need to signal that the backend information is *not* available
             store.dispatch({
-              type: types.Set_Backend_Not_Available
+              type: types.SET_BACKEND_NOT_AVAILABLE
             });
+
+            // Need to signal to clear up all ticketing related information in the frontend
+            // Since we are not able to connect to backend to get the latest data
+            store.dispatch({
+              type: types.CLEAR_ALL_TICKET_RELATED_INFORMATION
+            });
+
+            reject(err);
           });
     });
 }
