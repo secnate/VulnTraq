@@ -45,7 +45,6 @@ export default new Vuex.Store({
         get_ticket_info_from_backend(state) {
             // This function configures the application's data using retrieved
             // ticketing-related information from the backend
-            console.log("\nDEBUG: we are about to retrieve ticketing related information from backend");
             new Promise((resolve, reject) => {
                 // Check if backend is online & accessible
                 axios({
