@@ -12,8 +12,8 @@
             <b-form-group label="Patching Group:">
                 <b-form-select
                     id="input-3"
-                    v-model="form.patching_group"
-                    :options="foods"
+                    v-model="form.patching_group_name"
+                    :options="patching_group_names_list"
                     required
                 />
             </b-form-group>
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-// import store from '../store/store.js';
+import store from '../store/store.js';
 
 export default {
   name: 'NewVulnModal',
@@ -35,15 +35,17 @@ export default {
       }
   },
   computed: {
+    patching_group_names_list() {
+      return store.state.patching_group_names_list;
+    }
   },
   data() {
-      return {
-          form: {
-            patching_group: ""
-          },
-          foods: [{ text: 'Select One', value: null }, 'Carrots', 'Beans', 'Tomatoes', 'Corn']
-      }
+    return {
+      form: {
+        patching_group_name: ""
+      },
     }
+  }
 }
 </script>
     

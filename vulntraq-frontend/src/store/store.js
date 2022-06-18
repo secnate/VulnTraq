@@ -26,6 +26,7 @@ export default new Vuex.Store({
         //
         // List of ticket patching groups
         patching_group_list: [],
+        patching_group_names_list: [],
         //
         // List of ticket patching priority types
         // Patching priorities can also be colloquially referred to as "criticalities"
@@ -62,6 +63,10 @@ export default new Vuex.Store({
                     //
                     // List of ticket patching groups
                     state.patching_group_list = resp.data["group"];
+                    state.patching_group_names_list = [];
+                    for (var i = 0; i < state.patching_group_list.length; i++) {
+                        state.patching_group_names_list.push(state.patching_group_list[i]["name"]);
+                    }
                     //
                     // List of ticket patching priority types
                     // Patching priorities can also be colloquially referred to as "criticalities"
@@ -90,6 +95,7 @@ export default new Vuex.Store({
             //
             // List of ticket patching groups
             state.patching_group_list = [];
+            state.patching_group_names_list = [];
             //
             // List of ticket patching priority types
             // Patching priorities can also be colloquially referred to as "criticalities"
