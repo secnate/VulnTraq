@@ -24,9 +24,8 @@ export default new Vuex.Store({
         // List of ticket status options
         ticket_status_options_list: [],
         //
-        // List of ticket handling groups and teams
-        ticket_handling_group_list: [],
-        ticket_handling_teams_list: [],
+        // List of ticket patching groups
+        patching_group_list: [],
         //
         // List of ticket patching priority types
         // Patching priorities can also be colloquially referred to as "criticalities"
@@ -61,9 +60,8 @@ export default new Vuex.Store({
                     // List of ticket status options
                     state.ticket_status_options_list = resp.data["status"];
                     //
-                    // List of ticket handling groups and teams
-                    state.ticket_handling_group_list = resp.data["group"];
-                    state.ticket_handling_teams_list = resp.data["team"];
+                    // List of ticket patching groups
+                    state.patching_group_list = resp.data["group"];
                     //
                     // List of ticket patching priority types
                     // Patching priorities can also be colloquially referred to as "criticalities"
@@ -90,9 +88,8 @@ export default new Vuex.Store({
             // List of ticket status options
             state.ticket_status_options_list = [];
             //
-            // List of ticket handling groups and teams
-            state.ticket_handling_group_list = [];
-            state.ticket_handling_teams_list = [];
+            // List of ticket patching groups
+            state.patching_group_list = [];
             //
             // List of ticket patching priority types
             // Patching priorities can also be colloquially referred to as "criticalities"
