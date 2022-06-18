@@ -5,13 +5,37 @@
             centered
             size="xl"
             button-size="sm"
-            title="Add A New Vulnerability"
+            title="Add A New Vulnerability Patching Ticket"
             ok-title="Submit"
             @show="resetModal"
             @hidden="resetModal"
             @ok="handleSubmit"
         >
             <b-form class="modal-form-section">
+
+                <b-form-group
+                    label="Subject Line:" 
+                    label-size="lg"
+                >
+                    <b-form-input 
+                        size="sm"
+                        v-model="form.patching_ticket_subject_line"
+                        placeholder="Enter the new patching ticket's subject line"
+                        required
+                    />
+                </b-form-group>
+
+                <b-form-group
+                    label="Ticket's Message:" 
+                    label-size="lg"
+                >
+                    <b-form-textarea
+                        placeholder="Enter the new ticket's message..."
+                        v-model="form.patching_ticket_message"
+                        rows="4"
+                        required
+                    />
+                </b-form-group>
 
                 <b-form-group 
                     label="Priority Level:" 
@@ -64,6 +88,8 @@ export default {
           console.log("DEBUG: resetting the modal --> this functionality is to be done");
           this.form.patching_group_name = "";
           this.form.patching_priority_level = "";
+          this.form.patching_ticket_subject_line = "";
+          this.form.patching_ticket_message = "";
       }
   },
   computed: {
@@ -78,7 +104,9 @@ export default {
     return {
       form: {
         patching_group_name: "",
-        patching_priority_level: ""
+        patching_priority_level: "",
+        patching_ticket_subject_line: "",
+        patching_ticket_message: ""
       },
     }
   }
