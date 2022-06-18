@@ -86,8 +86,8 @@ export default {
       },
       resetModal: function resetModal() {
           console.log("DEBUG: resetting the modal --> this functionality is to be done");
-          this.form.patching_group_name = "";
-          this.form.patching_priority_level = "";
+          this.form.patching_group_name = null;
+          this.form.patching_priority_level = null;
           this.form.patching_ticket_subject_line = "";
           this.form.patching_ticket_message = "";
       }
