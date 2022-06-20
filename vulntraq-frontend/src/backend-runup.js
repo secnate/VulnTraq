@@ -5,6 +5,7 @@ import * as types from './store/mutationTypes.js';
 // Checks whether or not the backend server 
 // is up -- or at least contactable
 export function checkBackendIsUp() {
+
     return new Promise((resolve, reject) => {
         // Check if backend is online & accessible
         axios({
@@ -28,6 +29,11 @@ export function checkBackendIsUp() {
           })
           .catch((err) => {
             console.log("Failed to connect to backend");
+
+            // If we previously *had* a connection to the backend and don't now, need to notify the user
+            if (store.state.backend_available == true) {
+              alert('Could Not Perform The Specified Action\nThe VulnTraq Server Is Not Reachable');
+            }
 
             // Need to signal that the backend information is *not* available
             store.dispatch({

@@ -74,6 +74,7 @@
 </template>
 
 <script>
+import checkBackendIsUp from '../backend-runup.js';
 import store from '../store/store.js';
 
 export default {
@@ -83,6 +84,9 @@ export default {
   methods: {
       handleSubmit: function handleSubmit() {
           console.log("DEBUG: handling submit button clicked --> this functionality is to be done");
+
+          // We need to check if the backend is up or not. If it is not up, we obviously can't submit tickets
+          checkBackendIsUp();
       },
       resetModal: function resetModal() {
           console.log("DEBUG: resetting the modal --> this functionality is to be done");
