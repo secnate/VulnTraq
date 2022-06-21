@@ -146,6 +146,12 @@ export default new Vuex.Store({
             // Patching priorities can also be colloquially referred to as "criticalities"
             state.ticket_patching_priority_types_list = [];
             state.ticket_patching_priority_names_list = [];
+        },
+        submit_new_ticket_information(state) {
+            // DEBUG --> first iteration, need to pass in information used in creating the ticket
+            console.log("DEBUG --> in submit_new_ticket_information function.... going to create new ticket!!")
+            console.log("DEBUG --> the list of tickets [despite my not updating the state.all_tickets_list information yet] is now ");
+            console.log(state.all_tickets_list);
         }
     },
     actions: {
@@ -160,6 +166,14 @@ export default new Vuex.Store({
         },
         clear_all_ticket_related_information(context) {
             context.commit('clear_all_ticket_related_information');
+        },
+        submit_new_ticket_information(context) {
+            context.commit('submit_new_ticket_information');
+        }
+    },
+    getters: {
+        get_backend_is_available(state) {
+            return state.backend_available;
         }
     }
 });

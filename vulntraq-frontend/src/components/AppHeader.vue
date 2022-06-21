@@ -32,7 +32,6 @@
 
 <script>
 import checkBackendIsUp from '../backend-runup.js';
-import store from '../store/store.js';
 
 export default {
   name: 'AppHeader',
@@ -42,11 +41,6 @@ export default {
       refreshData: function refreshData() {
         // Checks if the backend is online & accessible
         checkBackendIsUp();
-      }
-  },
-  computed: {
-      backend_is_up() {
-        return store.state.backend_available;
       }
   }
 }

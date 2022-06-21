@@ -6,12 +6,10 @@
             size="xl"
             button-size="sm"
             title="Add A New Vulnerability Patching Ticket"
-            ok-title="Submit"
-            @show="resetModal"
-            @hidden="resetModal"
-            @ok="handleSubmit"
+            :hide-footer="true"
+            @hide="resetModal"
         >
-            <b-form class="modal-form-section">
+            <b-form class="modal-form-section" @submit="handleSubmit" @reset="resetModal">
 
                 <b-form-group
                     label="Subject Line:" 
@@ -67,6 +65,10 @@
                         class="modal-form-items"
                     />
                 </b-form-group>
+
+                <!-- Display the button for submitting the form's information -->
+                <div style="height: 20px;"/>
+                <b-button type="submit" variant="primary" block class="submit-button">Submit</b-button>
             </b-form>
 
         </b-modal>
@@ -74,22 +76,34 @@
 </template>
 
 <script>
-import checkBackendIsUp from '../backend-runup.js';
+import {checkIfContinuedBackendConnection, backendIsUp} from '../backend-runup.js';
 import store from '../store/store.js';
+import * as types from '../store/mutationTypes.js';
 
 export default {
   name: 'NewVulnModal',
   components: {
   },
   methods: {
-      handleSubmit: function handleSubmit() {
-          console.log("DEBUG: handling submit button clicked --> this functionality is to be done");
+      handleSubmit: function handleSubmit(event) {
+          event.preventDefault(); // to prevent the screen from going temporarily white after the button is clicked
 
-          // We need to check if the backend is up or not. If it is not up, we obviously can't submit tickets
-          checkBackendIsUp();
+          // We need to perform a check regarding whether the backend is up or not
+          // If it is not up, we obviously can't submit information regarding a new ticket
+          checkIfContinuedBackendConnection();
+          
+          if (backendIsUp()) {
+            store.dispatch({
+              type: types.SUBMIT_NEW_TICKET_INFORMATION
+            });
+          }
+
+          this.$bvModal.hide("new-vuln-modal");
       },
       resetModal: function resetModal() {
-          console.log("DEBUG: resetting the modal --> this functionality is to be done");
+          // We are closing the vulnerability-ticket creating modal
+          // Reseting this form's information fields so that the modal 
+          // will be presented fresh and anew whenever it is (re)opened again
           this.form.patching_group_name = null;
           this.form.patching_priority_level = null;
           this.form.patching_ticket_subject_line = "";
@@ -107,8 +121,8 @@ export default {
   data() {
     return {
       form: {
-        patching_group_name: "",
-        patching_priority_level: "",
+        patching_group_name: null,
+        patching_priority_level: null,
         patching_ticket_subject_line: "",
         patching_ticket_message: ""
       },
@@ -130,4 +144,8 @@ export default {
     width: 100%;
 }
 
+/* Formats the button for submitting the new vulnerability information in the modal's form */
+.submit-button {
+    width: 100%;
+}
 </style>
