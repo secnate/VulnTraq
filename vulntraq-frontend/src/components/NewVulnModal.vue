@@ -66,6 +66,23 @@
                     />
                 </b-form-group>
 
+                <!--
+                    User Interface components for uploading *one* spreadsheet listing affected machines
+                -->
+                <div style="height: 10px;"/>
+                <b-form-group 
+                    label="Spreadsheets Listing Affected Machines:" 
+                    label-size="lg"
+                    description="(Only .csv and .xlsx files are accepted)"
+                >
+                    <b-form-file
+                        v-model="form.affected_systems_file"
+                        required
+                        plain
+                        accept=".csv, .xslx"
+                    />
+                </b-form-group>
+
                 <!-- Display the button for submitting the form's information -->
                 <div style="height: 20px;"/>
                 <b-button type="submit" variant="primary" block class="submit-button">Submit</b-button>
@@ -87,15 +104,21 @@ export default {
   methods: {
       handleSubmit: function handleSubmit(event) {
           event.preventDefault(); // to prevent the screen from going temporarily white after the button is clicked
-
+          
           // We need to perform a check regarding whether the backend is up or not
           // If it is not up, we obviously can't submit information regarding a new ticket
           checkIfContinuedBackendConnection();
           
           if (backendIsUp()) {
-            store.dispatch({
-              type: types.SUBMIT_NEW_TICKET_INFORMATION
+
+            store.dispatch(types.SUBMIT_NEW_TICKET_INFORMATION, {
+                patching_group_name: this.form.patching_group_name,
+                patching_priority_level: this.form.patching_priority_level,
+                patching_ticket_subject_line: this.form.patching_ticket_subject_line,
+                patching_ticket_message: this.form.patching_ticket_message,
+                affected_systems_file: this.form.affected_systems_file
             });
+            
           }
 
           this.$bvModal.hide("new-vuln-modal");
@@ -108,6 +131,7 @@ export default {
           this.form.patching_priority_level = null;
           this.form.patching_ticket_subject_line = "";
           this.form.patching_ticket_message = "";
+          this.form.affected_systems_file = null;
       }
   },
   computed: {
@@ -124,7 +148,8 @@ export default {
         patching_group_name: null,
         patching_priority_level: null,
         patching_ticket_subject_line: "",
-        patching_ticket_message: ""
+        patching_ticket_message: "",
+        affected_systems_file: null
       },
     }
   }

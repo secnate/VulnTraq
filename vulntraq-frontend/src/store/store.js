@@ -44,7 +44,11 @@ export default new Vuex.Store({
         // List of ticket patching priority types
         // Patching priorities can also be colloquially referred to as "criticalities"
         ticket_patching_priority_types_list: [],
-        ticket_patching_priority_names_list: []
+        ticket_patching_priority_names_list: [],
+        //
+        // Default information for creating a new vulnerability ticket
+        new_patching_ticket_customer_name: "VulnTraq Application",
+        new_patching_ticket_customer_email: "vulntraqappemail@gmail.com"
     },
     mutations: {
         set_backend_is_available(state) {
@@ -147,11 +151,48 @@ export default new Vuex.Store({
             state.ticket_patching_priority_types_list = [];
             state.ticket_patching_priority_names_list = [];
         },
-        submit_new_ticket_information(state) {
-            // DEBUG --> first iteration, need to pass in information used in creating the ticket
-            console.log("DEBUG --> in submit_new_ticket_information function.... going to create new ticket!!")
-            console.log("DEBUG --> the list of tickets [despite my not updating the state.all_tickets_list information yet] is now ");
-            console.log(state.all_tickets_list);
+        submit_new_ticket_information(state, {
+            patching_group_name,
+            patching_priority_level,
+            patching_ticket_subject_line,
+            patching_ticket_message,
+            affected_systems_file
+        }) {
+            // We prepare the data for the ticket-creating POST request
+            var formData = new FormData();
+            formData.append("message", patching_ticket_message);
+            formData.append("actAsType", "customer");
+            formData.append("name", state.new_patching_ticket_customer_name);
+            formData.append("subject", patching_ticket_subject_line);
+            formData.append("from", state.new_patching_ticket_customer_email);
+            formData.append("attachments", affected_systems_file);
+            //
+            console.log("DEBUG -- the patching_group_name that will be used later in this function = " + patching_group_name);
+            console.log("DEBUG -- the patching_priority_level that will be used later in this function = " + patching_priority_level);
+            // 
+            // Launch the request
+            //
+            new Promise((resolve, reject) => {
+                //
+                // Making our ticket-creating request!
+                axios({
+                    url: "/api/v1/ticket",
+                    method: "POST",
+                    headers: {'Content-Type': 'multipart/form-data'},
+                    data: formData
+                })
+                .then((resp) => {
+                    console.log("Retrieved info related to the new ticket created in the backend");
+                    console.log("The retrieved data is: ");
+                    console.log(resp.data);
+                    resolve(resp);
+                })
+                .catch((err) => {
+                    console.log("Failed to create new ticket in the bacekend");
+                    console.log(err.response.data);
+                    reject(err);
+                });
+            });
         }
     },
     actions: {
@@ -167,8 +208,21 @@ export default new Vuex.Store({
         clear_all_ticket_related_information(context) {
             context.commit('clear_all_ticket_related_information');
         },
-        submit_new_ticket_information(context) {
-            context.commit('submit_new_ticket_information');
+        submit_new_ticket_information(context, {
+            patching_group_name,
+            patching_priority_level,
+            patching_ticket_subject_line,
+            patching_ticket_message,
+            affected_systems_file
+        }) {
+            // we are going to launch the process of mutating the state's information
+            context.commit('submit_new_ticket_information', {
+                patching_group_name,
+                patching_priority_level,
+                patching_ticket_subject_line,
+                patching_ticket_message,
+                affected_systems_file 
+            });
         }
     },
     getters: {
