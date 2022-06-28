@@ -1,8 +1,8 @@
 // store.js
 // Uses Vuex to store the frontend application's data across all components
 import axios from "axios";
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
 
 Vue.use(Vuex)
 
@@ -17,7 +17,7 @@ function sort_by_id() {
         return 0;
       }
     };
-  }
+}
 
 export default new Vuex.Store({
     state: {
@@ -71,6 +71,10 @@ export default new Vuex.Store({
                 })
                 .then((resp) => {
                     // Creating test stuff
+                    console.log("DEBUG -- the ticket info from backend is = ");
+                    console.log(resp.data);
+                    console.log();
+
                     state.all_tickets_list = resp.data["tickets"];
                     //
                     // List of all the ticket-handling agents -- i.e. IT staff
@@ -88,7 +92,7 @@ export default new Vuex.Store({
                     for (i = 0; i < state.patching_group_list.length; i++) {
                         state.patching_group_names_list.push({
                             text: state.patching_group_list[i]["name"],
-                            value: state.patching_group_list[i]["id"]
+                            value: state.patching_group_list[i]["name"]
                         });
                     }
                     //
@@ -117,7 +121,7 @@ export default new Vuex.Store({
                         // Thus, specific priority values need to be retrieved from the descriptor string and saved for future use
                         state.ticket_patching_priority_names_list.push({
                             text: state.ticket_patching_priority_types_list[i]["name"],
-                            value: state.ticket_patching_priority_types_list[i]["name"].split(" ")[0]
+                            value: state.ticket_patching_priority_types_list[i]["name"]
                         });
                     }
                     //
@@ -158,19 +162,38 @@ export default new Vuex.Store({
             patching_ticket_message,
             affected_systems_file
         }) {
+            //////////////////////////////////////////////////////////////////
+            // Since the UVDesk backend API bundle request's documentation was horrendously
+            // sparse & underdocumented  and the project has a tight timespan for development,
+            // we will be using *only* the ticket-creating POST request.
+            // 
+            // That ticket-creating POST request however lacks the fields specifying
+            // the priority of the ticket to be created and the group it is to be assigned to.
+            //
+            // Therefore, in a hacky workaround, the vulnerability-patching tickets'
+            // message field will have information regarding its patching priority
+            // and the patching group (of IT administrators) it will be assigned to.
+            //
+            // This is not ideal. Ideally the PATCH {helpdesk_url}/api/v1/ticket/{ticketId}
+            // API instruction would have been used to tweak the newly-created ticket's settings
+            // to assign it the appropriate priority level and patching group. However, it will do.
+            var completed_message_to_submit = patching_ticket_message;
+            completed_message_to_submit += "\n\n----------\n";
+            completed_message_to_submit += "PATCHING PRIORITY LEVEL: " + patching_priority_level + "\n";
+            completed_message_to_submit += "PATCHING PRIORITY GROUP: " + patching_group_name + "\n";
+            //
+            //
+            //////////////////////////////////////////////////////////////////
             // We prepare the data for the ticket-creating POST request
             var formData = new FormData();
-            formData.append("message", patching_ticket_message);
+            formData.append("message", completed_message_to_submit);
             formData.append("actAsType", "customer");
             formData.append("name", state.new_patching_ticket_customer_name);
             formData.append("subject", patching_ticket_subject_line);
             formData.append("from", state.new_patching_ticket_customer_email);
             formData.append("attachments", affected_systems_file);
-            //
-            console.log("DEBUG -- the patching_group_name that will be used later in this function = " + patching_group_name);
-            console.log("DEBUG -- the patching_priority_level that will be used later in this function = " + patching_priority_level);
             // 
-            // Launch the request
+            // Launch the ticket-creating request
             //
             new Promise((resolve, reject) => {
                 //
@@ -215,14 +238,18 @@ export default new Vuex.Store({
             patching_ticket_message,
             affected_systems_file
         }) {
-            // we are going to launch the process of mutating the state's information
+            // We are going to launch the process of mutating the state's information
             context.commit('submit_new_ticket_information', {
                 patching_group_name,
                 patching_priority_level,
                 patching_ticket_subject_line,
                 patching_ticket_message,
-                affected_systems_file 
+                affected_systems_file
             });
+
+            // Need to update our state-related information after creating a new ticket 
+            // and get the updated list of all tickets' information
+            context.commit('get_ticket_info_from_backend');
         }
     },
     getters: {

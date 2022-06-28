@@ -11,7 +11,7 @@
 
         <!-- Now displaying the left-hand button -->
         <b-button 
-          v-if="vuln_ticket_list.length != 0"
+          v-if="vuln_ticket_list_length != 0"
           class="reports-button" v-on:click="openReports()" 
           style="background-color:transparent; border-color:transparent;"
         >
@@ -32,17 +32,7 @@
       </b-navbar>
 
       <!-- The Actual Ticket Information Being Displayed -->
-      <div v-if="loading_vuln_ticket_information" class="ticket-information-body-info-section">
-        <!-- We are loading vulnerability ticket information -->
-        <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
-        
-        <div>
-          <b-spinner variant="info"/>
-          <h1>Loading Vulnerability Ticket Information....</h1>
-        </div>
-      </div>
-
-      <div v-else-if="!loading_vuln_ticket_information && vuln_ticket_list.length == 0" 
+      <div v-if="vuln_ticket_list_length == 0" 
         class="ticket-information-body-info-section">
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
 
@@ -83,12 +73,6 @@ export default {
   },
   props: {
   },
-  data() {
-    return {
-      vuln_ticket_list: [],
-      loading_vuln_ticket_information: false,
-    };
-  },
   methods: {
       openReports: function openReports() {
           console.log("DEBUG: in openReports function");
@@ -97,6 +81,9 @@ export default {
   computed: {
       backend_is_up() {
         return store.state.backend_available;
+      },
+      vuln_ticket_list_length() {
+        return store.state.all_tickets_list.length;
       }
   }
 }
