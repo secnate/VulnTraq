@@ -31,6 +31,9 @@ export default new Vuex.Store({
         // List of *all* tickets stored in the backend and their information
         all_tickets_list: [], // By default, we don't have any
         //
+        // A list of the ids of the tickets displayed in the table
+        displayed_table_ticket_ids: [],
+        //
         // List of all the ticket-handling agents -- i.e. IT staff
         ticket_handling_agents_list: [], 
         //
@@ -46,9 +49,33 @@ export default new Vuex.Store({
         ticket_patching_priority_types_list: [],
         ticket_patching_priority_names_list: [],
         //
+        // List of objects mapping the ticket ids' to the specific properties
+        // that are only found when examining each one on an individual level
+        additional_ticket_properties_list: [],
+        //
         // Default information for creating a new vulnerability ticket
         new_patching_ticket_customer_name: "VulnTraq Application",
-        new_patching_ticket_customer_email: "vulntraqappemail@gmail.com"
+        new_patching_ticket_customer_email: "vulntraqappemail@gmail.com",
+        //
+        //////////////////////////////////////////////////////////////////////////////////
+        // Information used for creating a new vulnerability ticket containing information regarding
+        // the patching priority group and priority level & retrieving the data later on
+        PATCHING_PRIORITY_LEVEL_STRING: "PATCHING PRIORITY LEVEL",
+        PATCHING_PRIORITY_LEVEL_GROUP: "PATCHING PRIORITY GROUP",
+        //
+        //     This is the separator character used for building the key-value relationship
+        //     of data stored in a newly-created vulnerability patch ticket's message body.
+        //
+        //     The format is: "<KEY>: <VALUE>", with the ": " separating the two fields.
+        //     The regex version of the ": " is "\: " and is used to construct regexes
+        PATCH_TICKET_KEY_VALUE_SEPARATOR_STRING: ": ",
+        PATCH_TICKET_KEY_VALUE_SEPARATOR_STRING_REGEX_VERSION: "\\: ",
+        //
+        // This string is used to separate the actual message from the other data points 
+        // regarding patching priority and group inserted into the message field below
+        PATCH_TICKET_MESSAGE_AND_APPENDIX_SEPARATOR: "----------",
+        //
+        ///////////////////////////////////////////////////////////////////////////////////
     },
     mutations: {
         set_backend_is_available(state) {
@@ -71,7 +98,7 @@ export default new Vuex.Store({
                 })
                 .then((resp) => {
                     // Creating test stuff
-                    console.log("DEBUG -- the ticket info from backend is = ");
+                    console.log("DEBUG -- the ticket info received from backend is = ");
                     console.log(resp.data);
                     console.log();
 
@@ -108,6 +135,7 @@ export default new Vuex.Store({
                     // The sorting in turn deliberately affects the order of priority-related options shown in the user interface...
                     state.ticket_patching_priority_types_list = resp.data["type"].sort(sort_by_id());
                     state.ticket_patching_priority_names_list = [{ text: 'Select One', value: null}];
+                    //
                     for (i = 0; i < state.ticket_patching_priority_types_list.length; i++) {
                         // We are now extracting the options for the different levels of ticket patching priorities
                         // Notice that the ticket patching priorities in the UVDesk backend server are of the format
@@ -126,7 +154,96 @@ export default new Vuex.Store({
                     }
                     //
                     console.log("Retrieved ticket-related info from backend");
-                    resolve(resp);
+                })
+                .then( (resp) => {
+                    //
+                    // Need to now initialize an array of objects mapping the ticket ids' 
+                    // to the specific properties that are only found when examining 
+                    // each one in detail and in depth on an individual level
+                    state.additional_ticket_properties_list = [];
+                    //
+                    for (var i = 0; i < state.all_tickets_list.length; i++) {
+                        
+                        var examined_ticket_id = state.all_tickets_list[i]["id"];
+
+                        // We need to check if we already have the ticket displayed
+                        // If it is already displayed, we *already* have all the ticket's
+                        // basic and supplementary information stored & it displayed. 
+                        // No need to spin extra cycles in getting the ticket-specific
+                        // information with regards to it and then processing it
+                        if (state.displayed_table_ticket_ids.indexOf(examined_ticket_id) != -1) {
+                            continue 
+                        }
+                        //
+                        new Promise((resolve, reject) => {
+                            //
+                            // Making our ticket-creating request!
+                            axios({
+                                url: "/api/v1/ticket/" + examined_ticket_id,
+                                method: "GET",
+                            })
+                            .then((individual_ticket_resp) => {
+                                
+                                // We are now getting specific information for this ticket
+                                // But this information is stored inside the ticket-creating thread.... so need to get the data
+                                var thread_list = individual_ticket_resp.data["ticket"]["threads"];
+                                var create_ticket_thread = null;
+                                //
+                                for (var thread_index = 0; thread_index < thread_list.length; thread_index++) {
+                                    if (thread_list[thread_index]["threadType"] == "create") {
+                                        create_ticket_thread = thread_list[thread_index];
+                                        break;
+                                    }
+                                }
+                                //
+                                //
+                                if (create_ticket_thread != null) {
+                                    //
+                                    // We got the thread for creating the ticket
+                                    // Inside the thread is a message string of the following format
+                                    //
+                                    //   <MESSAGE>\n\n----------\nPATCHING PRIORITY LEVEL: <PRIORITY>\nPATCHING PRIORITY GROUP: <GROUP>\n
+                                    //
+                                    // Need to extract the values of <MESSAGE>, <PRIORITY>, and <GROUP> before 
+                                    // putting those into the extracted_ticket_info object.
+                                    var create_ticket_thread_message_text_string = create_ticket_thread["message"];
+
+                                    var beginning_message_separator_index = create_ticket_thread["message"].indexOf(state.PATCH_TICKET_MESSAGE_AND_APPENDIX_SEPARATOR);
+                                    var the_message_itself = create_ticket_thread["message"].substr(0, beginning_message_separator_index).trim();
+                                    
+                                    var extracted_patching_group_name = create_ticket_thread_message_text_string.match(
+                                            state.PATCHING_PRIORITY_LEVEL_GROUP + 
+                                            state.PATCH_TICKET_KEY_VALUE_SEPARATOR_STRING_REGEX_VERSION + "(.*)"
+                                        )[1];
+                                                                        
+                                    var extracted_priority_level = create_ticket_thread_message_text_string.match(
+                                        state.PATCHING_PRIORITY_LEVEL_STRING + 
+                                        state.PATCH_TICKET_KEY_VALUE_SEPARATOR_STRING_REGEX_VERSION + "(.*)"
+                                        )[1];
+                                    
+                                    var extracted_attachment_path = create_ticket_thread["attachments"][0]["path"];
+                                    
+                                    var extracted_ticket_info = {
+                                        id: individual_ticket_resp.data["ticket"]["id"],
+                                        message: the_message_itself,
+                                        priority_level: extracted_priority_level,
+                                        patching_group: extracted_patching_group_name,
+                                        attachment_path: extracted_attachment_path
+                                    }
+
+                                    // We load the information into the state.additional_ticket_properties list for future use
+                                    state.additional_ticket_properties_list.push(extracted_ticket_info);
+                                    resolve(individual_ticket_resp);
+                                }
+                            })
+                            .catch((individual_ticket_err) => {
+                                console.log("Failed to retrieve info related to the *specific* ticket of id = " + examined_ticket_id);
+                                reject(individual_ticket_err);
+                            });
+                        });
+                    }
+
+                   resolve(resp);
                 })
                 .catch((err) => {
                     console.log("Failed to retrieve ticket-related info from backend");
@@ -139,6 +256,7 @@ export default new Vuex.Store({
             // with no ticket related information available. 
             // Need to reset all ticket-related information
             state.all_tickets_list = [];
+            state.displayed_table_ticket_ids = [];
             //
             // List of all the ticket-handling agents -- i.e. IT staff
             state.ticket_handling_agents_list = []; 
@@ -154,6 +272,10 @@ export default new Vuex.Store({
             // Patching priorities can also be colloquially referred to as "criticalities"
             state.ticket_patching_priority_types_list = [];
             state.ticket_patching_priority_names_list = [];
+            //
+            // List of objects mapping the ticket ids' to the specific properties
+            // that are only found when examining each one on an individual level
+            state.additional_ticket_properties_list = [];
         },
         submit_new_ticket_information(state, {
             patching_group_name,
@@ -176,11 +298,17 @@ export default new Vuex.Store({
             //
             // This is not ideal. Ideally the PATCH {helpdesk_url}/api/v1/ticket/{ticketId}
             // API instruction would have been used to tweak the newly-created ticket's settings
-            // to assign it the appropriate priority level and patching group. However, it will do.
+            // to assign it the appropriate priority level and patching group. 
+            //
+            // However, attempts to get the PATCH method working over multiple days were unsuccessful
+            // and the documentation was sparse. Because the project could not afford to be bogged down,
+            // had to look for a different alternative method to get the desired data uploaded into the server. 
+            //
+            // Hence, this hacky workaround will do.
             var completed_message_to_submit = patching_ticket_message;
-            completed_message_to_submit += "\n\n----------\n";
-            completed_message_to_submit += "PATCHING PRIORITY LEVEL: " + patching_priority_level + "\n";
-            completed_message_to_submit += "PATCHING PRIORITY GROUP: " + patching_group_name + "\n";
+            completed_message_to_submit += "\n\n" + state.PATCH_TICKET_MESSAGE_AND_APPENDIX_SEPARATOR + "\n";
+            completed_message_to_submit += state.PATCHING_PRIORITY_LEVEL_STRING + ": " + patching_priority_level + "\n";
+            completed_message_to_submit += state.PATCHING_PRIORITY_LEVEL_GROUP + ": " + patching_group_name + "\n";
             //
             //
             //////////////////////////////////////////////////////////////////

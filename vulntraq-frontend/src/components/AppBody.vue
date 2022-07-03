@@ -1,5 +1,7 @@
 <template>
   <div>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <div class="body-holder" v-if="backend_is_up">
       <!-- The Ticket Information Pandel's Navigation Bar -->
       <b-navbar toggleable="lg" class="body-navbar">
@@ -47,6 +49,13 @@
         <!-- We loaded vulnerability ticket information and have some data for display -->
         <h2>WE LOADED DATA!</h2>
         <h2>THIS PORTION WILL BE DONE LATER<br/>WHEN LINKING TO BACKEND</h2>
+
+        <!-- This is the actual table showing tickets -->
+        <datatable
+          title="All Vulnerability Tickets"
+          :columns="ticket_table_columns"
+          :rows="ticket_table_rows"
+        ></datatable>
       </div>
     </div>
     <div class="body-holder" v-else>
@@ -65,18 +74,45 @@
 <script>
 import store from '../store/store.js';
 import NewVulnModal from '@/components/NewVulnModal.vue'
+import DataTable from "vue-materialize-datatable";
 
 export default {
   name: 'AppBody',
   components: {
-    NewVulnModal
+    NewVulnModal,
+    "datatable": DataTable
   },
   props: {
   },
   methods: {
-      openReports: function openReports() {
-          console.log("DEBUG: in openReports function");
-      }
+    openReports: function openReports() {
+      console.log("DEBUG: in openReports function");
+    },
+    have_all_tick_info: function have_all_tick_info(id_to_examine) {
+      //
+      // Need to verify that we have all the information necessary for a ticket of specified id value 
+      //
+      // Need to see if the store's additional_ticket_properties_list has that data
+      //
+      // We have some items in the list of additional_ticket_properties
+      // We cab start iterating to see if a given ticket of specified id has its information loaded
+      var to_return = false;
+
+      this.$store.state.additional_ticket_properties_list.forEach(ticket_obj => { 
+
+        if (ticket_obj['id'] == id_to_examine) {
+          to_return = true;
+        }
+
+      });
+
+      return to_return;
+    }
+  },
+  data : function() {
+    return { 
+      ticket_table_rows: [],
+    }
   },
   computed: {
       backend_is_up() {
@@ -84,7 +120,75 @@ export default {
       },
       vuln_ticket_list_length() {
         return store.state.all_tickets_list.length;
+      },
+      ticket_table_columns() {
+        return [
+              {
+                label: "Vulnerability Name",
+                field: "vulnName",
+                numeric: false,
+                html: false
+              },
+              {
+                label: "Status",
+                field: "status",
+                numeric: false,
+                html: false
+              }
+              /*
+              {
+                label: "Priority",
+                field: "priority",
+                numeric: false,
+                html: false
+              },
+              */
+              /*
+              {
+                label: "Patching Group",
+                field: "patchingGroup",
+                numeric: false,
+                html: false
+              },
+              {
+                label: "Met Deadline?",
+                field: "metDeadline",
+                numeric: false,
+                html: false
+              }
+              */
+            ];
       }
+  },
+  watch: {
+    // We have the additional_ticket_properties_list information updated... can we display another ticket?
+    '$store.state.additional_ticket_properties_list': {
+        immediate: true,
+        handler() {
+
+          this.$store.state.all_tickets_list.forEach(ticket_obj => {
+
+            // Iterating over each ticket. Need to verify it not having been used previously
+            if ( this.$store.state.displayed_table_ticket_ids.indexOf(ticket_obj["id"]) == -1 && this.have_all_tick_info(ticket_obj["id"]) ) {
+              // It hasn't been used previously and we have *all* necessary information to load it into the table
+              var new_ticket_row = {
+                vulnName: ticket_obj["subject"],
+                status: ticket_obj["status"]["description"]
+              }
+              //
+              // Add the new row to the very top of the table
+              // Logic is top rows generally contain newer 
+              // information than the rows below
+              //
+              this.ticket_table_rows.unshift(new_ticket_row);
+
+              this.$store.state.displayed_table_ticket_ids.push(ticket_obj["id"]);
+            }
+
+          });
+
+        }
+     }
   }
 }
 </script>
@@ -97,9 +201,9 @@ export default {
   ticket related body panel and involved navigation bar
 */
 .body-holder {
-  margin-left: 10%;
-  margin-right: 10%;
-  margin-top: 80px;
+  margin-top: 50px;
+  margin-left: 5px;
+  margin-right: 5px;
   background-color: yellow;
 }
 

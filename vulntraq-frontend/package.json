@@ -13,6 +13,7 @@
     "bootstrap-vue": "^2.22.0",
     "core-js": "^3.8.3",
     "vue": "^2.6.14",
+    "vue-materialize-datatable": "^1.0.4",
     "vuex": "^3.6.2"
   },
   "devDependencies": {
