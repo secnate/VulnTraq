@@ -3,7 +3,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <div class="body-holder" v-if="backend_is_up">
-      <!-- The Ticket Information Pandel's Navigation Bar -->
+      <!-- The Ticket Information Panel's Navigation Bar -->
       <b-navbar toggleable="lg" class="body-navbar">
 
         <!-- Left aligned nav items -->
@@ -33,8 +33,11 @@
         <div style="width: 10px;"/>
       </b-navbar>
 
+      <!-- Vertical Padding Separating The Ticket Information Panel's Navigation Bar From Actual Ticket Info -->
+      <div style="height: 2px;"/>
+
       <!-- The Actual Ticket Information Being Displayed -->
-      <div v-if="vuln_ticket_list_length == 0" 
+      <div v-if="vuln_ticket_list_length == 0 && table_can_be_displayed" 
         class="ticket-information-body-info-section">
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
 
@@ -47,14 +50,22 @@
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
 
         <!-- We loaded vulnerability ticket information and have some data for display -->
-        <h2>WE LOADED DATA!</h2>
-        <h2>THIS PORTION WILL BE DONE LATER<br/>WHEN LINKING TO BACKEND</h2>
+        <div v-if="!table_can_be_displayed">
+          <h2>Loading All Vulnerability Tickets' Data....</h2>
+          <b-progress 
+            :value="number_of_currently_completely_loaded_tickets" 
+            :max="number_of_all_tickets_to_be_displayed" 
+            height="2rem"
+            show-progress animated
+          />
+        </div>
 
         <!-- This is the actual table showing tickets -->
         <datatable
           title="All Vulnerability Tickets"
           :columns="ticket_table_columns"
           :rows="ticket_table_rows"
+          v-if="table_can_be_displayed"
         ></datatable>
       </div>
     </div>
@@ -87,6 +98,22 @@ export default {
   methods: {
     openReports: function openReports() {
       console.log("DEBUG: in openReports function");
+    },
+    get_additional_ticket_info: function get_additional_ticket_info(id_to_examine) {
+      //
+      // Need to get the additional ticket information for a ticket of specified id value
+      //
+      var to_return = null;
+
+      this.$store.state.additional_ticket_properties_list.forEach(ticket_obj => { 
+
+        if (ticket_obj['id'] == id_to_examine) {
+          to_return = ticket_obj;
+        }
+
+      });
+
+      return to_return;
     },
     have_all_tick_info: function have_all_tick_info(id_to_examine) {
       //
@@ -121,6 +148,15 @@ export default {
       vuln_ticket_list_length() {
         return store.state.all_tickets_list.length;
       },
+      number_of_all_tickets_to_be_displayed() {
+        return this.$store.state.all_tickets_list.length;
+      },
+      number_of_currently_completely_loaded_tickets() {
+        return this.$store.state.displayed_table_ticket_ids.length;
+      },
+      table_can_be_displayed() {
+        return (this.$store.state.all_tickets_list.length == this.$store.state.displayed_table_ticket_ids.length);
+      },
       ticket_table_columns() {
         return [
               {
@@ -134,22 +170,19 @@ export default {
                 field: "status",
                 numeric: false,
                 html: false
-              }
-              /*
+              },
+              {
+                label: "Patching Group",
+                field: "patching_group",
+                numeric: false,
+                html: false
+              },
               {
                 label: "Priority",
                 field: "priority",
                 numeric: false,
                 html: false
-              },
-              */
-              /*
-              {
-                label: "Patching Group",
-                field: "patchingGroup",
-                numeric: false,
-                html: false
-              },
+              }/*,
               {
                 label: "Met Deadline?",
                 field: "metDeadline",
@@ -169,11 +202,18 @@ export default {
           this.$store.state.all_tickets_list.forEach(ticket_obj => {
 
             // Iterating over each ticket. Need to verify it not having been used previously
-            if ( this.$store.state.displayed_table_ticket_ids.indexOf(ticket_obj["id"]) == -1 && this.have_all_tick_info(ticket_obj["id"]) ) {
+            var additional_information_for_ticket_obj = this.get_additional_ticket_info(ticket_obj["id"]);
+
+            if ( this.$store.state.displayed_table_ticket_ids.indexOf(ticket_obj["id"]) == -1 && additional_information_for_ticket_obj != null ) {
               // It hasn't been used previously and we have *all* necessary information to load it into the table
+              console.log("\nDEBUG --> the ticket_obj = " + JSON.stringify(ticket_obj));
+              console.log("\tAnd the additional_information_for_ticket_obj = " + JSON.stringify(additional_information_for_ticket_obj));
+
               var new_ticket_row = {
                 vulnName: ticket_obj["subject"],
-                status: ticket_obj["status"]["description"]
+                status: ticket_obj["status"]["description"],
+                patching_group: additional_information_for_ticket_obj["patching_group"],
+                priority: additional_information_for_ticket_obj["priority_level"]
               }
               //
               // Add the new row to the very top of the table
@@ -204,7 +244,6 @@ export default {
   margin-top: 50px;
   margin-left: 5px;
   margin-right: 5px;
-  background-color: yellow;
 }
 
 /* 
@@ -237,9 +276,9 @@ export default {
   text-align: center;
   align-items: center;
   justify-content: center;
-  background-color: yellow;
   border: 2px solid black;
   border-radius: 5px;
+  background-color: #ffbb33;
 }
 
 </style>
