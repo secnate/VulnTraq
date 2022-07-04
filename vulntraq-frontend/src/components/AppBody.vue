@@ -51,7 +51,10 @@
 
         <!-- We loaded vulnerability ticket information and have some data for display -->
         <div v-if="!table_can_be_displayed">
-          <h2>Loading All Vulnerability Tickets' Data....</h2>
+          <div>
+            <h2 v-if="!currently_adding_new_ticket">Loading All Vulnerability Tickets' Data....</h2>
+            <h2 v-else>Creating And Processing The New Ticket...</h2>
+          </div>
           <b-progress 
             :value="number_of_currently_completely_loaded_tickets" 
             :max="number_of_all_tickets_to_be_displayed" 
@@ -66,6 +69,7 @@
           :columns="ticket_table_columns"
           :rows="ticket_table_rows"
           v-if="table_can_be_displayed"
+
         ></datatable>
       </div>
     </div>
@@ -155,7 +159,10 @@ export default {
         return this.$store.state.displayed_table_ticket_ids.length;
       },
       table_can_be_displayed() {
-        return (this.$store.state.all_tickets_list.length == this.$store.state.displayed_table_ticket_ids.length);
+        return (this.$store.state.all_tickets_list.length <= this.$store.state.displayed_table_ticket_ids.length) || (this.$store.state.ticket_addition_underway);
+      },
+      currently_adding_new_ticket() {
+        return this.$store.state.ticket_addition_underway;
       },
       ticket_table_columns() {
         return [
@@ -224,9 +231,7 @@ export default {
 
               this.$store.state.displayed_table_ticket_ids.push(ticket_obj["id"]);
             }
-
           });
-
         }
      }
   }

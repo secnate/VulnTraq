@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import {checkIfContinuedBackendConnection, backendIsUp} from '../backend-runup.js';
+import {checkIfContinuedBackendConnection} from '../backend-runup.js';
 import store from '../store/store.js';
 import * as types from '../store/mutationTypes.js';
 
@@ -109,7 +109,8 @@ export default {
           // If it is not up, we obviously can't submit information regarding a new ticket
           checkIfContinuedBackendConnection();
           
-          if (backendIsUp()) {
+          
+          if (store.getters.get_backend_is_available) { 
               
             store.dispatch(types.SUBMIT_NEW_TICKET_INFORMATION, {
                 patching_group_name: this.form.patching_group,

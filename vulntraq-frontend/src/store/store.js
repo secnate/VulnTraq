@@ -34,6 +34,9 @@ export default new Vuex.Store({
         // A list of the ids of the tickets displayed in the table
         displayed_table_ticket_ids: [],
         //
+        // Boolean representing whether or not a new ticket is *currently* being added by frontend user
+        ticket_addition_underway: false,
+        //
         // List of all the ticket-handling agents -- i.e. IT staff
         ticket_handling_agents_list: [], 
         //
@@ -234,6 +237,14 @@ export default new Vuex.Store({
                                     // We load the information into the state.additional_ticket_properties list for future use
                                     state.additional_ticket_properties_list.push(extracted_ticket_info);
                                     resolve(individual_ticket_resp);
+
+                                    // We now need to check if it was *this* ticket that was being added 
+                                    // and had its additional information extracted
+                                    if (state.ticket_addition_underway) {
+                                        // We got the individual tickets information now
+                                        // The ticket-creation process is over
+                                        state.ticket_addition_underway = false;
+                                    }
                                 }
                             })
                             .catch((individual_ticket_err) => {
@@ -242,8 +253,8 @@ export default new Vuex.Store({
                             });
                         });
                     }
-
-                   resolve(resp);
+                    
+                    resolve(resp);
                 })
                 .catch((err) => {
                     console.log("Failed to retrieve ticket-related info from backend");
@@ -257,6 +268,8 @@ export default new Vuex.Store({
             // Need to reset all ticket-related information
             state.all_tickets_list = [];
             state.displayed_table_ticket_ids = [];
+
+            state.ticket_addition_underway = false;
             //
             // List of all the ticket-handling agents -- i.e. IT staff
             state.ticket_handling_agents_list = []; 
@@ -305,6 +318,12 @@ export default new Vuex.Store({
             // had to look for a different alternative method to get the desired data uploaded into the server. 
             //
             // Hence, this hacky workaround will do.
+            //
+            // Before we get started, we need to ensure that the ticket loader bar doesn't appear during this process
+            // That why the boolean variable for indicating that this process on the way will be set to true
+            // and will be set to false only when *all* the ticket information
+            state.ticket_addition_underway = true;
+            //
             var completed_message_to_submit = patching_ticket_message;
             completed_message_to_submit += "\n\n" + state.PATCH_TICKET_MESSAGE_AND_APPENDIX_SEPARATOR + "\n";
             completed_message_to_submit += state.PATCHING_PRIORITY_LEVEL_STRING + ": " + patching_priority_level + "\n";
@@ -366,6 +385,7 @@ export default new Vuex.Store({
             patching_ticket_message,
             affected_systems_file
         }) {
+
             // We are going to launch the process of mutating the state's information
             context.commit('submit_new_ticket_information', {
                 patching_group_name,
@@ -376,7 +396,12 @@ export default new Vuex.Store({
             });
 
             // Need to update our state-related information after creating a new ticket 
-            // and get the updated list of all tickets' information
+            // and get the updated list of all tickets' information.
+            //
+            // The process of getting the ticket_info_from_backend being completed
+            // will signify the end of the ticket addition being underway.
+            // This happens when the get_ticket_info_from_backend sets the 
+            // state.ticket_addition_underway variable to be false
             context.commit('get_ticket_info_from_backend');
         }
     },
