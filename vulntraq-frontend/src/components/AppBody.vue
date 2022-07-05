@@ -13,7 +13,7 @@
 
         <!-- Now displaying the left-hand button -->
         <b-button 
-          v-if="vuln_ticket_list_length != 0"
+          v-if="vuln_ticket_list_length != 0 && table_can_be_displayed"
           class="reports-button" v-on:click="openReports()" 
           style="background-color:transparent; border-color:transparent;"
         >
@@ -50,11 +50,13 @@
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
 
         <!-- We loaded vulnerability ticket information and have some data for display -->
+        <div v-if="currently_adding_new_ticket">
+          <b-spinner style="width: 3rem; height: 3rem;"/>
+          <h2>Creating The New Ticket...</h2>
+        </div>
+
         <div v-if="!table_can_be_displayed">
-          <div>
-            <h2 v-if="!currently_adding_new_ticket">Loading All Vulnerability Tickets' Data....</h2>
-            <h2 v-else>Creating And Processing The New Ticket...</h2>
-          </div>
+          <h2 v-if="!currently_adding_new_ticket">Loading All Vulnerability Tickets' Data....</h2>
           <b-progress 
             :value="number_of_currently_completely_loaded_tickets" 
             :max="number_of_all_tickets_to_be_displayed" 
@@ -159,13 +161,21 @@ export default {
         return this.$store.state.displayed_table_ticket_ids.length;
       },
       table_can_be_displayed() {
-        return (this.$store.state.all_tickets_list.length <= this.$store.state.displayed_table_ticket_ids.length) || (this.$store.state.ticket_addition_underway);
+        // Displaying the table if we have a non-zero number of *all* rows' information definitively loaded *or* we are creating a new ticket
+        return ((this.$store.state.all_tickets_list.length <= this.$store.state.displayed_table_ticket_ids.length) && (this.$store.state.all_tickets_list.length > 0))
+                || (this.$store.state.ticket_addition_underway);
       },
       currently_adding_new_ticket() {
         return this.$store.state.ticket_addition_underway;
       },
       ticket_table_columns() {
         return [
+            {
+                label: "Ticket ID",
+                field: "ticket_id",
+                numeric: true,
+                html: false
+              },
               {
                 label: "Vulnerability Name",
                 field: "vulnName",
@@ -189,14 +199,31 @@ export default {
                 field: "priority",
                 numeric: false,
                 html: false
-              }/*,
+              },
               {
-                label: "Met Deadline?",
-                field: "metDeadline",
+                label: "Day Ticket Created",
+                field: "day_ticket_created",
+                numeric: false,
+                html: false
+              },
+              {
+                label: "Due Date",
+                field: "ticket_due_date",
+                numeric: false,
+                html: false
+              },
+              {
+                label: "Day Closed",
+                field: "ticket_closing_date",
+                numeric: false,
+                html: false
+              },
+              {
+                label: "Past Deadline?",
+                field: "past_deadline",
                 numeric: false,
                 html: false
               }
-              */
             ];
       }
   },
@@ -215,12 +242,17 @@ export default {
               // It hasn't been used previously and we have *all* necessary information to load it into the table
               console.log("\nDEBUG --> the ticket_obj = " + JSON.stringify(ticket_obj));
               console.log("\tAnd the additional_information_for_ticket_obj = " + JSON.stringify(additional_information_for_ticket_obj));
-
+              //
               var new_ticket_row = {
+                ticket_id: ticket_obj["id"],
                 vulnName: ticket_obj["subject"],
                 status: ticket_obj["status"]["description"],
                 patching_group: additional_information_for_ticket_obj["patching_group"],
-                priority: additional_information_for_ticket_obj["priority_level"]
+                priority: additional_information_for_ticket_obj["priority_level"],
+                day_ticket_created: additional_information_for_ticket_obj["day_ticket_created"].toDateString(),
+                ticket_due_date: additional_information_for_ticket_obj["ticket_due_date"].toDateString(),
+                ticket_closing_date: additional_information_for_ticket_obj["ticket_closing_date"],
+                past_deadline: (additional_information_for_ticket_obj["is_past_deadline"] ? "Yes" : "No")
               }
               //
               // Add the new row to the very top of the table

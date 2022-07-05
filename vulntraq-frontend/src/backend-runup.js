@@ -83,7 +83,7 @@ export function checkIfContinuedBackendConnection() {
 
             // If we previously *had* a connection to the backend and don't now, need to notify the user
             if (previously_had_connection_to_backend) {
-              alert('Could Not Perform The Specified Action\nLost Connection To The VulnTraq Server');
+              alert('Lost Connection To The VulnTraq Server');
             }
             reject(err);
           });

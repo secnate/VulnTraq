@@ -19,6 +19,41 @@ function sort_by_id() {
     };
 }
 
+// Helper function used to take the Date object for when a patching ticket
+// was created along with its patching priority string.
+//
+// The goal is to generate a new Date object reflecting the day by which patching is to be completed
+function get_patch_deadline_date(ticket_creation_date_obj, patch_priority_string) {
+
+    var num_days_for_patching_increment = 0; // This is the count of the number of days the IT staff have for patching a ticket
+
+    var uppercase_patch_priority_string = patch_priority_string.toUpperCase();
+
+    // Now need to check the various patching cases ["NOW"/ "X Days" / "Y Months"]
+    // and update the value of the num_days_for_patching_increment
+    if (uppercase_patch_priority_string.indexOf("NOW") != -1) {
+        // The vulnerability must be patched TODAY! Due by tomorrow!
+        num_days_for_patching_increment = 1;
+    }
+    else if (uppercase_patch_priority_string.match(/(\d+)\s+MONTH/)) {
+        // We have "X" months to patch the vuln
+        // Main simplifying assumption behind the logic: 1 month = 30 days
+        num_days_for_patching_increment = parseInt(uppercase_patch_priority_string.match(/(\d+)\s+MONTH/)[1]) * 30;
+    }
+    else if (uppercase_patch_priority_string.match(/\d+\s+DAY/)) {
+        // We have "X" days to patch the vuln
+        num_days_for_patching_increment = parseInt(uppercase_patch_priority_string.match(/(\d+)\s+DAY/)[1]);
+    }
+
+    var to_return = new Date(ticket_creation_date_obj);
+    to_return.setDate(to_return.getDate() + num_days_for_patching_increment);
+
+    // making the Date object start at the day's beginning
+    to_return.setHours(0, 0, 0, 0);
+
+    return to_return;
+}
+
 export default new Vuex.Store({
     state: {
         // The backend_available indicates whether the frontend can reach
@@ -226,18 +261,53 @@ export default new Vuex.Store({
                                     
                                     var extracted_attachment_path = create_ticket_thread["attachments"][0]["path"];
                                     
+                                    /////////////////////////////////////////////////////////////////////////////////////////////////////
+                                    //
+                                    // Need to identify the day that this ticket was created and the ticket's patching deadline
+                                    var timestamp_ticket_creation = individual_ticket_resp.data["ticket"]["createdAt"]["timestamp"];
+                                    var ticket_creation_date = new Date(timestamp_ticket_creation * 1000); // the "* 1000" is to convert seconds to milliseconds
+                                    ticket_creation_date.setHours(0, 0, 0, 0);                             // making the Date object start at the day's beginning
+                                    var patch_deadline_date = get_patch_deadline_date(ticket_creation_date, extracted_priority_level);
+                                    //
+                                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                    //
+                                    // Need to now determine if the ticket remained open or closed past due date
+                                    var ticket_is_past_deadline = false;
+                                    var ticket_closing_date_string = "N/A";        // default value indicating it is not applicable
+                                    //
+                                    if (individual_ticket_resp.data["ticket"]["status"]["description"] == "Open") {
+                                        // The ticket is currently open
+                                        var datetime_now = new Date();
+                                        ticket_is_past_deadline = datetime_now > patch_deadline_date;
+                                    }
+                                    else {
+                                        // The ticket is closed or in some other non-open state
+                                        var ticket_closing_timestamp = individual_ticket_resp.data["ticket"]["updatedAt"]["timestamp"];
+                                        var ticket_closing_date = new Date(ticket_closing_timestamp * 1000); // the "* 1000" is to convert seconds to milliseconds
+                                        ticket_is_past_deadline = ticket_closing_date > patch_deadline_date;
+                                        ticket_closing_date_string = ticket_closing_date.toDateString();
+                                    }
+                                    //
+                                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                    //
+                                    // Got all the needed information for the ticket's additional properties that weren't directly provided by API
                                     var extracted_ticket_info = {
                                         id: individual_ticket_resp.data["ticket"]["id"],
                                         message: the_message_itself,
                                         priority_level: extracted_priority_level,
                                         patching_group: extracted_patching_group_name,
-                                        attachment_path: extracted_attachment_path
+                                        attachment_path: extracted_attachment_path,
+                                        day_ticket_created: ticket_creation_date,
+                                        ticket_due_date: patch_deadline_date,
+                                        ticket_closing_date: ticket_closing_date_string,
+                                        is_past_deadline: ticket_is_past_deadline
                                     }
-
+                                    //
                                     // We load the information into the state.additional_ticket_properties list for future use
                                     state.additional_ticket_properties_list.push(extracted_ticket_info);
                                     resolve(individual_ticket_resp);
-
+                                    //
+                                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                     // We now need to check if it was *this* ticket that was being added 
                                     // and had its additional information extracted
                                     if (state.ticket_addition_underway) {
@@ -245,6 +315,8 @@ export default new Vuex.Store({
                                         // The ticket-creation process is over
                                         state.ticket_addition_underway = false;
                                     }
+                                    //
+                                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                 }
                             })
                             .catch((individual_ticket_err) => {
