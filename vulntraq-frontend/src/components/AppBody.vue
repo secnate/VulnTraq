@@ -37,7 +37,7 @@
       <div style="height: 2px;"/>
 
       <!-- The Actual Ticket Information Being Displayed -->
-      <div v-if="vuln_ticket_list_length == 0 && table_can_be_displayed" 
+      <div v-if="vuln_ticket_list_length == 0 || table_can_be_displayed" 
         class="ticket-information-body-info-section">
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
 
@@ -70,6 +70,7 @@
           title="All Vulnerability Tickets"
           :columns="ticket_table_columns"
           :rows="ticket_table_rows"
+          :printable="false"
           v-if="table_can_be_displayed"
 
         ></datatable>
