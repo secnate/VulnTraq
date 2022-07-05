@@ -37,7 +37,7 @@
       <div style="height: 2px;"/>
 
       <!-- The Actual Ticket Information Being Displayed -->
-      <div v-if="vuln_ticket_list_length == 0 || table_can_be_displayed" 
+      <div v-if="vuln_ticket_list_length == 0 && !table_can_be_displayed" 
         class="ticket-information-body-info-section">
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
 
@@ -233,6 +233,12 @@ export default {
     '$store.state.additional_ticket_properties_list': {
         immediate: true,
         handler() {
+
+          if (this.$store.state.all_tickets_list.length < this.ticket_table_rows.length) {
+            // Some tickets got deleted from the backend UVDesk server
+            // Because we have less tickets than originally, we need to do a house cleaning
+            this.ticket_table_rows = [];
+          }
 
           this.$store.state.all_tickets_list.forEach(ticket_obj => {
 
