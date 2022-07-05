@@ -38,7 +38,7 @@ The Vue.JS frontend was locally hosted and made API requests through Ngrok to th
 # Running The Prototype
 To run the frontend, go into the `vulntraq-frontend` folder in the command line and use the `npm run serve` command to display it within your computer's browser at the `http://localhost:8080` address.
 
-Open the server virtual machine and use Ngrok to reverse proxy it from the http://localhost:8080 to a publicly acessible URL.
+Open the server virtual machine and use Ngrok to reverse proxy it from the http://localhost:8080 to a publicly acessible URL. The frontend's connectivity settings are configured in the `main.js` file, specifically the UVDesk server's URL and the API key. Notice that the API key is in Axios' *Authorization* header after the word `Basic`.
 
 The frontend is then to communicate with the virtualized server using [UVDesk's API](https://github.com/uvdesk/api-bundle). The main issue is that sending REST API requests from a frontend running at http://localhost:8080 to the Ngrok-generated URL for accessing the backend creates _Cross-Origin Request Sharing_ errors.
 
