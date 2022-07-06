@@ -71,8 +71,11 @@
           :columns="ticket_table_columns"
           :rows="ticket_table_rows"
           :printable="false"
+          :defaultPerPage="20"
+          :exportable="false"
+          :sortable="false"
+          v-on:row-click="onRowClick"
           v-if="table_can_be_displayed"
-
         ></datatable>
       </div>
     </div>
@@ -132,15 +135,34 @@ export default {
       // We cab start iterating to see if a given ticket of specified id has its information loaded
       var to_return = false;
 
-      this.$store.state.additional_ticket_properties_list.forEach(ticket_obj => { 
-
+      this.$store.state.additional_ticket_properties_list.forEach(ticket_obj => {
         if (ticket_obj['id'] == id_to_examine) {
           to_return = true;
         }
-
       });
 
       return to_return;
+    },
+    // Function for comparing ticket objects in terms of their order of creation (represented by ticket ids)
+    // The function is used in ordering tickets in the ticket-displaying table 
+    // with the most recent ticket [of highest ticket id value] being at the top
+    // and the oldest ticket [of lowest ticket id value] being at the bottom
+    compare_ticket_objects: function compare_ticket_objects(a, b) {
+      if (a.ticket_id > b.ticket_id) {
+        return -1;
+      }
+      else if (a.ticket_id < b.ticket_id) {
+        return 1;     
+      }
+      else {
+        return 0;
+      }
+    },
+    onRowClick: function (row) {
+      // We clicked a row in our table of tickets
+      console.log("\nDEBUG --> clicked the following row in table of tickets");
+      console.log(row);
+      console.log("DEBUG --> need to display a modal with its data\n");
     }
   },
   data : function() {
@@ -181,7 +203,7 @@ export default {
                 label: "Vulnerability Name",
                 field: "vulnName",
                 numeric: false,
-                html: false
+                html: false,
               },
               {
                 label: "Status",
@@ -267,7 +289,13 @@ export default {
               // information than the rows below
               //
               this.ticket_table_rows.unshift(new_ticket_row);
-
+              //
+              // We want to sort the ticket objects in the this.ticket_table_rows
+              // so that they by default have the most recent ticket 
+              // (with the highest id value) towards the top
+              this.ticket_table_rows.sort(this.compare_ticket_objects);
+              //
+              // OK we added the ticket. Updating the record of used ticket ids appropriately
               this.$store.state.displayed_table_ticket_ids.push(ticket_obj["id"]);
             }
           });
