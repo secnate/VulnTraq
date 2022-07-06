@@ -79,9 +79,9 @@
     <div class="body-holder" v-else>
       <div class="ticket-information-body-info-section">
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
-        <b-icon icon="exclamation-triangle-fill" scale="3" variant="warning"/>
+        <b-icon icon="exclamation-triangle-fill" scale="3" variant="dark"/>
         <div style="height: 20px;"/> <!-- vertical padding offset -->
-        <h2>Backend Is Currently Not Acessible At</h2>
+        <h2>Backend Currently Not Acessible At</h2>
         <h2>{{this.$backendURL}}</h2>
       </div>
     </div>
