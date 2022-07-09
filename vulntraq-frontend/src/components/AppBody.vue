@@ -89,6 +89,13 @@
       </div>
     </div>
     <NewVulnModal/>
+    <DisplayVulnTicketInfoModal
+      :vuln_name="clicked_ticket_vuln_name"
+      :vuln_details_message="selected_row_message"
+      :priority_level="clicked_ticket_priority_level"
+      :patching_group="clicked_ticket_patching_group"
+      :csv_spreadsheet_path="selected_row_csv_path"
+    />
   </div>
 </template>
 
@@ -96,12 +103,14 @@
 import store from '../store/store.js';
 import NewVulnModal from '@/components/NewVulnModal.vue'
 import DataTable from "vue-materialize-datatable";
+import DisplayVulnTicketInfoModal from '@/components/DisplayVulnTicketInfoModal.vue'
 
 export default {
   name: 'AppBody',
   components: {
     NewVulnModal,
-    "datatable": DataTable
+    "datatable": DataTable,
+    DisplayVulnTicketInfoModal
   },
   props: {
   },
@@ -160,14 +169,59 @@ export default {
     },
     onRowClick: function (row) {
       // We clicked a row in our table of tickets
-      console.log("\nDEBUG --> clicked the following row in table of tickets");
-      console.log(row);
-      console.log("DEBUG --> need to display a modal with its data\n");
+      this.currently_selected_row = row;
+      this.update_clicked_ticket_vuln_details_message();
+      this.update_clicked_ticket_csv_spreadsheet_path();
+      this.$bvModal.show("display-vuln-ticket-info-modal");
+    },
+    update_clicked_ticket_vuln_details_message() {
+      
+      if (this.currently_selected_row == null) {
+        this.selected_row_message = "";
+        return;
+      }
+
+      // We need to find the actual ticket in the Vue.JS application's store and extract the message
+      for (var i = 0; i < this.$store.state.additional_ticket_properties_list.length; i++) {
+
+        if (this.$store.state.additional_ticket_properties_list[i]["id"] == this.currently_selected_row["ticket_id"]) {
+          this.selected_row_message = this.$store.state.additional_ticket_properties_list[i]["message"];
+          return;
+        }
+      }
+      //
+      // Welp, something went wrong!
+      this.selected_row_message = "DEFAULT EMPTY MESSAGE THAT SHOULD NOT BE HERE";
+    },
+    update_clicked_ticket_csv_spreadsheet_path() {
+
+      if (this.currently_selected_row == null) {
+        this.selected_row_csv_path = "";
+        return;
+      }
+
+      // We need to find the actual ticket in the Vue.JS application's store and extract the message
+      for (var i = 0; i < this.$store.state.additional_ticket_properties_list.length; i++) {
+
+        if (this.$store.state.additional_ticket_properties_list[i]["id"] == this.currently_selected_row["ticket_id"]) {
+          this.selected_row_csv_path = this.$store.state.additional_ticket_properties_list[i]["attachment_path"];
+          return;
+        }
+      }
+      //
+      // Welp, something went wrong!
+      this.selected_row_csv_path = "DEFAULT VALUE FOR A TICKET'S CSV FILE PATH ";
     }
   },
   data : function() {
     return { 
       ticket_table_rows: [],
+      //
+      // Data information needed to have a modal containing 
+      // vuln-ticket info be displayed when clicking row
+      currently_selected_row: null,
+      selected_row_message: "",
+      selected_row_csv_path: ""
     }
   },
   computed: {
@@ -248,7 +302,21 @@ export default {
                 html: false
               }
             ];
-      }
+      },
+      ////////////////////////////////////////////////////////////////////////////////////
+      //
+      // Computed properties depending on the value of the clicked row and involved vuln 
+      clicked_ticket_vuln_name() {
+        return (this.currently_selected_row == null ? "" : this.currently_selected_row.vulnName);
+      },
+      clicked_ticket_priority_level() {
+        return (this.currently_selected_row == null ? "" : this.currently_selected_row.priority);
+      },
+      clicked_ticket_patching_group() {
+        return (this.currently_selected_row == null ? "" : this.currently_selected_row.patching_group);
+      },
+      //
+      ////////////////////////////////////////////////////////////////////////////////////
   },
   watch: {
     // We have the additional_ticket_properties_list information updated... can we display another ticket?
@@ -268,9 +336,8 @@ export default {
             var additional_information_for_ticket_obj = this.get_additional_ticket_info(ticket_obj["id"]);
 
             if ( this.$store.state.displayed_table_ticket_ids.indexOf(ticket_obj["id"]) == -1 && additional_information_for_ticket_obj != null ) {
+              //
               // It hasn't been used previously and we have *all* necessary information to load it into the table
-              console.log("\nDEBUG --> the ticket_obj = " + JSON.stringify(ticket_obj));
-              console.log("\tAnd the additional_information_for_ticket_obj = " + JSON.stringify(additional_information_for_ticket_obj));
               //
               var new_ticket_row = {
                 ticket_id: ticket_obj["id"],
