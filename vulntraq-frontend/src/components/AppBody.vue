@@ -95,6 +95,10 @@
       :priority_level="clicked_ticket_priority_level"
       :patching_group="clicked_ticket_patching_group"
       :csv_spreadsheet_path="selected_row_csv_path"
+      :day_ticket_created="clicked_ticket_day_ticket_created"
+      :day_ticket_closed="clicked_ticket_day_ticket_closed"
+      :day_ticket_due="clicked_ticket_day_ticket_due"
+      :past_deadline="clicked_ticket_past_deadline"
     />
   </div>
 </template>
@@ -170,6 +174,7 @@ export default {
     onRowClick: function (row) {
       // We clicked a row in our table of tickets
       this.currently_selected_row = row;
+      console.log("DEBUG: the selected row = " + JSON.stringify(row));
       this.update_clicked_ticket_vuln_details_message();
       this.update_clicked_ticket_csv_spreadsheet_path();
       this.$bvModal.show("display-vuln-ticket-info-modal");
@@ -315,6 +320,18 @@ export default {
       clicked_ticket_patching_group() {
         return (this.currently_selected_row == null ? "" : this.currently_selected_row.patching_group);
       },
+      clicked_ticket_day_ticket_created() {
+        return (this.currently_selected_row == null ? "" : this.currently_selected_row.day_ticket_created);
+      },
+      clicked_ticket_day_ticket_due() {
+        return (this.currently_selected_row == null ? "" : this.currently_selected_row.ticket_due_date);
+      },
+      clicked_ticket_day_ticket_closed() {
+        return (this.currently_selected_row == null ? "" : this.currently_selected_row.ticket_closing_date);
+      },
+      clicked_ticket_past_deadline() {
+        return (this.currently_selected_row == null ? "" : this.currently_selected_row.past_deadline);
+      }
       //
       ////////////////////////////////////////////////////////////////////////////////////
   },

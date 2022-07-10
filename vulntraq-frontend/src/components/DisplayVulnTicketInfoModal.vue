@@ -5,7 +5,7 @@
             centered
             size="xl"
             button-size="sm"
-            title="Vulnerability Ticket Information"
+            :title="this.vuln_name"
             :hide-footer="true"
         >
 
@@ -29,6 +29,15 @@
                     <b>Patching Group:</b>
                     <br/>
                     {{this.patching_group}}
+                </b-list-group-item>
+                <b-list-group-item>
+                    <b>Day Ticket Opened:</b> {{this.day_ticket_created}}
+                    <br/>
+                    <b>Day Ticket Due:</b> {{this.day_ticket_due}}
+                    <br/>
+                    <b>Day Ticket Closed:</b> {{this.day_ticket_closed}}
+                    <br/>
+                    <b>Is Past Deadline?:</b> {{ past_deadline }}
                 </b-list-group-item>
                 <b-list-group-item>
                     <b>List of Affected Systems:</b>
@@ -70,7 +79,11 @@ export default {
       vuln_details_message: String,
       priority_level: String,
       patching_group: String,
-      csv_spreadsheet_path: String
+      csv_spreadsheet_path: String,
+      day_ticket_created: String,
+      day_ticket_closed: String,
+      day_ticket_due: String,
+      past_deadline: String
   }
 }
 </script>
