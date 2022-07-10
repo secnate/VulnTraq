@@ -61,6 +61,8 @@
 </template>
 
 <script>
+import store from '../store/store.js';
+import * as types from '../store/mutationTypes.js';
 
 export default {
   name: 'DisplayVulnTicketInfoModal',
@@ -71,7 +73,9 @@ export default {
         this.$bvModal.hide("display-vuln-ticket-info-modal");
       },
       download_list_affected_systems: function download_list_affected_systems() {
-          console.log("DEBUG --> in the download_list_affected_systems() function");
+          store.dispatch(types.DOWNLOAD_TICKET_CSV_FILE, {
+              id_of_attachment_to_download: this.csv_spreadsheet_id
+          });
       }
   },
   props: {
@@ -79,7 +83,7 @@ export default {
       vuln_details_message: String,
       priority_level: String,
       patching_group: String,
-      csv_spreadsheet_path: String,
+      csv_spreadsheet_id: String,
       day_ticket_created: String,
       day_ticket_closed: String,
       day_ticket_due: String,

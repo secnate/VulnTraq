@@ -259,7 +259,7 @@ export default new Vuex.Store({
                                         state.PATCH_TICKET_KEY_VALUE_SEPARATOR_STRING_REGEX_VERSION + "(.*)"
                                         )[1];
                                     
-                                    var extracted_attachment_path = create_ticket_thread["attachments"][0]["path"];
+                                    var extracted_attachment_id = create_ticket_thread["attachments"][0]["id"];
                                     
                                     /////////////////////////////////////////////////////////////////////////////////////////////////////
                                     //
@@ -296,7 +296,7 @@ export default new Vuex.Store({
                                         message: the_message_itself,
                                         priority_level: extracted_priority_level,
                                         patching_group: extracted_patching_group_name,
-                                        attachment_path: extracted_attachment_path,
+                                        attachment_id: extracted_attachment_id,
                                         day_ticket_created: ticket_creation_date,
                                         ticket_due_date: patch_deadline_date,
                                         ticket_closing_date: ticket_closing_date_string,
@@ -435,6 +435,22 @@ export default new Vuex.Store({
                     reject(err);
                 });
             });
+        },
+        download_ticket_csv_file(state, {
+            id_of_attachment_to_download
+        }) {            
+            axios({
+                url: "/api/v1/ticket/attachment/" + id_of_attachment_to_download,
+                method: 'POST',
+                responseType: 'blob', // important
+            }).then((response) => {
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'affected_hosts.csv'); //or any other extension
+                document.body.appendChild(link);
+                link.click();
+            });
         }
     },
     actions: {
@@ -475,6 +491,11 @@ export default new Vuex.Store({
             // This happens when the get_ticket_info_from_backend sets the 
             // state.ticket_addition_underway variable to be false
             context.commit('get_ticket_info_from_backend');
+        },
+        download_ticket_csv_file(context, { id_of_attachment_to_download }) {
+            context.commit('download_ticket_csv_file', {
+                id_of_attachment_to_download
+            });
         }
     },
     getters: {

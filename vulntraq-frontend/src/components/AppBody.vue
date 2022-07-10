@@ -94,7 +94,7 @@
       :vuln_details_message="selected_row_message"
       :priority_level="clicked_ticket_priority_level"
       :patching_group="clicked_ticket_patching_group"
-      :csv_spreadsheet_path="selected_row_csv_path"
+      :csv_spreadsheet_id="selected_row_csv_id"
       :day_ticket_created="clicked_ticket_day_ticket_created"
       :day_ticket_closed="clicked_ticket_day_ticket_closed"
       :day_ticket_due="clicked_ticket_day_ticket_due"
@@ -174,9 +174,8 @@ export default {
     onRowClick: function (row) {
       // We clicked a row in our table of tickets
       this.currently_selected_row = row;
-      console.log("DEBUG: the selected row = " + JSON.stringify(row));
       this.update_clicked_ticket_vuln_details_message();
-      this.update_clicked_ticket_csv_spreadsheet_path();
+      this.update_clicked_ticket_csv_spreadsheet_id();
       this.$bvModal.show("display-vuln-ticket-info-modal");
     },
     update_clicked_ticket_vuln_details_message() {
@@ -198,10 +197,10 @@ export default {
       // Welp, something went wrong!
       this.selected_row_message = "DEFAULT EMPTY MESSAGE THAT SHOULD NOT BE HERE";
     },
-    update_clicked_ticket_csv_spreadsheet_path() {
+    update_clicked_ticket_csv_spreadsheet_id() {
 
       if (this.currently_selected_row == null) {
-        this.selected_row_csv_path = "";
+        this.selected_row_csv_id = "-1";
         return;
       }
 
@@ -209,13 +208,13 @@ export default {
       for (var i = 0; i < this.$store.state.additional_ticket_properties_list.length; i++) {
 
         if (this.$store.state.additional_ticket_properties_list[i]["id"] == this.currently_selected_row["ticket_id"]) {
-          this.selected_row_csv_path = this.$store.state.additional_ticket_properties_list[i]["attachment_path"];
+          this.selected_row_csv_id = this.$store.state.additional_ticket_properties_list[i]["attachment_id"].toString();
           return;
         }
       }
       //
       // Welp, something went wrong!
-      this.selected_row_csv_path = "DEFAULT VALUE FOR A TICKET'S CSV FILE PATH ";
+      this.selected_row_csv_id = "-1";
     }
   },
   data : function() {
@@ -226,7 +225,7 @@ export default {
       // vuln-ticket info be displayed when clicking row
       currently_selected_row: null,
       selected_row_message: "",
-      selected_row_csv_path: ""
+      selected_row_csv_id: ""
     }
   },
   computed: {
