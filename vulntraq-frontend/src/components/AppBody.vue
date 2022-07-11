@@ -2,6 +2,20 @@
   <div>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+    <!-- Alert to be displayed if there are no tickets for a selected ticket-filtering priority -->
+    <b-alert
+      :show="dismissCountDown"
+      dismissible
+      variant="warning"
+      @dismissed="dismissCountDown=0"
+      @dismiss-count-down="countDownChanged"
+    >
+      There are no vulnerability tickets for the selected "{{ selected_filtering_options }}" criticality. You are welcome to create the first :-)
+      <br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This alert will close after {{ dismissCountDown }} seconds...
+    </b-alert>
+
+    <!-- Start of the body to be displayed -->
     <div class="body-holder" v-if="backend_is_up">
       <!-- The Ticket Information Panel's Navigation Bar -->
       <b-navbar toggleable="lg" class="body-navbar">
@@ -22,9 +36,11 @@
 
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ms-auto">
-          <b-button v-b-modal.new-vuln-modal class="addition-button"
-                    v-b-tooltip.hover="'Address A New Vulnerability'" 
-                    style="background-color:transparent; border-color: transparent;">
+          <b-button 
+            v-b-modal.new-vuln-modal class="addition-button"
+            v-b-tooltip.hover="'Address A New Vulnerability'" 
+            style="background-color:transparent; border-color: transparent;"
+          >
             <b-icon icon="plus-circle" aria-hidden="true" class="settings-button-icon"></b-icon> 
           </b-button>
         </b-navbar-nav>
@@ -71,6 +87,7 @@
 
           <!-- Disply the filtering options prompt and selector on the same row -->
           <div class="flex">
+
             <div style="width: 20px;"/>
             <h4> Patching Criticality of Displayed Tickets: </h4>
             <div style="width: 10px;"/>
@@ -84,7 +101,7 @@
           <datatable
             :title="'Vulnerability Tickets'"
             :columns="ticket_table_columns"
-            :rows="ticket_table_rows"
+            :rows="filtered_ticket_table_rows"
             :printable="false"
             :defaultPerPage="20"
             :exportable="false"
@@ -140,9 +157,32 @@ export default {
       console.log("DEBUG: in openReports function");
     },
     updated_tickets_displayed_by_criticality() {
+      //
       // Called when users change the criticality of the tickets to be displayed in the table
-      console.log("DEBUG -- in updated_tickets_displayed_by_criticality() function");
-      console.log("\tthe new criticality is = " + this.selected_filtering_options);
+      //
+      // the null value for the selected_filtering_options represents *all* possible criticalities
+      if (this.selected_filtering_options == null) {
+        this.filtered_ticket_table_rows = this.all_possible_ticket_table_rows;
+        return;
+      }
+      //
+      // Otherwise, we have a specific criticality we need to filter on
+      this.filtered_ticket_table_rows = [];
+      //
+      for (var i = 0; i < this.all_possible_ticket_table_rows.length; i++) {
+        if (this.all_possible_ticket_table_rows[i].priority == this.selected_filtering_options) {
+          this.filtered_ticket_table_rows.unshift(this.all_possible_ticket_table_rows[i]);
+        }
+      }
+      //
+      this.filtered_ticket_table_rows.sort(this.compare_ticket_objects);
+      //
+      // Now need to check if we have *no* tickets displayed for this 
+      // particular criticality -- and notify the user if so
+      if (this.filtered_ticket_table_rows.length == 0 && this.all_possible_ticket_table_rows.length != 0) {
+        // We *have* some tickets for display... but not of this specific criticality
+        this.showAlert();
+      }
     },
     get_additional_ticket_info: function get_additional_ticket_info(id_to_examine) {
       //
@@ -237,18 +277,34 @@ export default {
       //
       // Welp, something went wrong!
       this.selected_row_csv_id = "-1";
+    },
+    //
+    /////////////////////////////////////////////////////////////////////////////
+    // Functions for controlling the alert that is to be 
+    // displayed if there are no tickets of the specified criticality
+    countDownChanged(dismissCountDown) {
+      this.dismissCountDown = dismissCountDown
+    },
+    showAlert() {
+      this.dismissCountDown = this.dismissSecs
     }
   },
   data : function() {
     return { 
-      ticket_table_rows: [],
+      filtered_ticket_table_rows: [],      // they are displayed based on selected criticality
+      all_possible_ticket_table_rows: [],
       //
       // Data information needed to have a modal containing 
       // vuln-ticket info be displayed when clicking row
       currently_selected_row: null,
       selected_row_message: "",
       selected_row_csv_id: "",
-      selected_filtering_options: null
+      selected_filtering_options: null,
+      //
+      // Variables for controlling the alert that is to be 
+      // displayed if there are no tickets of the selected criticality
+      dismissSecs: 30,
+      dismissCountDown: 0
     }
   },
   computed: {
@@ -366,10 +422,10 @@ export default {
         immediate: true,
         handler() {
 
-          if (this.$store.state.all_tickets_list.length < this.ticket_table_rows.length) {
+          if (this.$store.state.all_tickets_list.length < this.all_possible_ticket_table_rows.length) {
             // Some tickets got deleted from the backend UVDesk server
             // Because we have less tickets than originally, we need to do a house cleaning
-            this.ticket_table_rows = [];
+            this.all_possible_ticket_table_rows = [];
           }
 
           this.$store.state.all_tickets_list.forEach(ticket_obj => {
@@ -397,15 +453,22 @@ export default {
               // Logic is top rows generally contain newer 
               // information than the rows below
               //
-              this.ticket_table_rows.unshift(new_ticket_row);
+              this.all_possible_ticket_table_rows.unshift(new_ticket_row);
               //
-              // We want to sort the ticket objects in the this.ticket_table_rows
+              // We want to sort the ticket objects in the this.all_possible_ticket_table_rows
               // so that they by default have the most recent ticket 
               // (with the highest id value) towards the top
-              this.ticket_table_rows.sort(this.compare_ticket_objects);
+              this.all_possible_ticket_table_rows.sort(this.compare_ticket_objects);
               //
               // OK we added the ticket. Updating the record of used ticket ids appropriately
               this.$store.state.displayed_table_ticket_ids.push(ticket_obj["id"]);
+              //
+              // Now need to check if we can actually add it to the filtered rows right now 
+              if (this.selected_filtering_options == null || this.selected_filtering_options == new_ticket_row.priority) {
+
+                this.filtered_ticket_table_rows.unshift(new_ticket_row);
+                this.filtered_ticket_table_rows.sort(this.compare_ticket_objects);
+              }
             }
           });
         }
