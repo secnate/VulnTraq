@@ -86,6 +86,7 @@ export default new Vuex.Store({
         // Patching priorities can also be colloquially referred to as "criticalities"
         ticket_patching_priority_types_list: [],
         ticket_patching_priority_names_list: [],
+        ticket_filtering_priority_names_list: [],
         //
         // List of objects mapping the ticket ids' to the specific properties
         // that are only found when examining each one on an individual level
@@ -173,6 +174,9 @@ export default new Vuex.Store({
                     // The sorting in turn deliberately affects the order of priority-related options shown in the user interface...
                     state.ticket_patching_priority_types_list = resp.data["type"].sort(sort_by_id());
                     state.ticket_patching_priority_names_list = [{ text: 'Select One', value: null}];
+                    // This ticket_filtering_priority_names_list is used to filter 
+                    // out tickets in the application-presented datatable by criticality 
+                    state.ticket_filtering_priority_names_list = [{ text: 'All Tickets', value: null}];
                     //
                     for (i = 0; i < state.ticket_patching_priority_types_list.length; i++) {
                         // We are now extracting the options for the different levels of ticket patching priorities
@@ -185,10 +189,13 @@ export default new Vuex.Store({
                         // While the descriptor text will follow that format for users to read and select from, the process
                         // of new vulnerability ticket creation will involve specifying the *specific* priority level necessary.
                         // Thus, specific priority values need to be retrieved from the descriptor string and saved for future use
-                        state.ticket_patching_priority_names_list.push({
+                        var new_entry = {
                             text: state.ticket_patching_priority_types_list[i]["name"],
                             value: state.ticket_patching_priority_types_list[i]["name"]
-                        });
+                        };
+
+                        state.ticket_patching_priority_names_list.push(new_entry);
+                        state.ticket_filtering_priority_names_list.push(new_entry);
                     }
                     //
                     console.log("Retrieved ticket-related info from backend");
@@ -357,6 +364,7 @@ export default new Vuex.Store({
             // Patching priorities can also be colloquially referred to as "criticalities"
             state.ticket_patching_priority_types_list = [];
             state.ticket_patching_priority_names_list = [];
+            state.ticket_filtering_priority_names_list = [];
             //
             // List of objects mapping the ticket ids' to the specific properties
             // that are only found when examining each one on an individual level

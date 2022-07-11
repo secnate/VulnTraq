@@ -48,7 +48,7 @@
 
       <div v-else class="ticket-information-body-info-section">
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
-
+        
         <!-- We loaded vulnerability ticket information and have some data for display -->
         <div v-if="currently_adding_new_ticket">
           <b-spinner style="width: 3rem; height: 3rem;"/>
@@ -66,19 +66,36 @@
         </div>
 
         <!-- This is the actual table showing tickets -->
-        <datatable
-          title="All Vulnerability Tickets"
-          :columns="ticket_table_columns"
-          :rows="ticket_table_rows"
-          :printable="false"
-          :defaultPerPage="20"
-          :exportable="false"
-          :sortable="false"
-          v-on:row-click="onRowClick"
-          v-if="table_can_be_displayed"
-        ></datatable>
+        <!-- Buttons used to determine the tickets that are to be displayed by selected criticalities -->
+        <div v-if="table_can_be_displayed">
+
+          <!-- Disply the filtering options prompt and selector on the same row -->
+          <div class="flex">
+            <div style="width: 20px;"/>
+            <h4> Patching Criticality of Displayed Tickets: </h4>
+            <div style="width: 10px;"/>
+            <b-form-select 
+              v-model="selected_filtering_options" 
+              :options="vuln_ticket_filtering_options"
+              v-on:change="updated_tickets_displayed_by_criticality()"
+            />
+          </div>
+
+          <datatable
+            :title="'Vulnerability Tickets'"
+            :columns="ticket_table_columns"
+            :rows="ticket_table_rows"
+            :printable="false"
+            :defaultPerPage="20"
+            :exportable="false"
+            :sortable="false"
+            v-on:row-click="onRowClick"
+            v-if="table_can_be_displayed"
+          ></datatable>
+        </div>
       </div>
     </div>
+
     <div class="body-holder" v-else>
       <div class="ticket-information-body-info-section">
         <div style="height: 20px;"/> <!-- Ensures that the information is a bit below the section's top border -->
@@ -121,6 +138,11 @@ export default {
   methods: {
     openReports: function openReports() {
       console.log("DEBUG: in openReports function");
+    },
+    updated_tickets_displayed_by_criticality() {
+      // Called when users change the criticality of the tickets to be displayed in the table
+      console.log("DEBUG -- in updated_tickets_displayed_by_criticality() function");
+      console.log("\tthe new criticality is = " + this.selected_filtering_options);
     },
     get_additional_ticket_info: function get_additional_ticket_info(id_to_examine) {
       //
@@ -225,12 +247,16 @@ export default {
       // vuln-ticket info be displayed when clicking row
       currently_selected_row: null,
       selected_row_message: "",
-      selected_row_csv_id: ""
+      selected_row_csv_id: "",
+      selected_filtering_options: null
     }
   },
   computed: {
       backend_is_up() {
         return store.state.backend_available;
+      },
+      vuln_ticket_filtering_options() {
+        return this.$store.state.ticket_filtering_priority_names_list;
       },
       vuln_ticket_list_length() {
         return store.state.all_tickets_list.length;
@@ -434,6 +460,15 @@ export default {
   border: 2px solid black;
   border-radius: 5px;
   background-color: #ffbb33;
+}
+
+.ticket-criticalities-options-buttons {
+  width: 100%;
+  background-color: #ffe6e6;
+}
+
+.flex {
+  display: flex;
 }
 
 </style>
