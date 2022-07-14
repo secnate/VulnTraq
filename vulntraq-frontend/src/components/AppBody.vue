@@ -122,6 +122,8 @@
         <h2>{{this.$backendURL}}</h2>
       </div>
     </div>
+
+    <!-- Information about modals to be presented from this screen! -->
     <NewVulnModal/>
     <DisplayVulnTicketInfoModal
       :vuln_name="clicked_ticket_vuln_name"
@@ -134,6 +136,10 @@
       :day_ticket_due="clicked_ticket_day_ticket_due"
       :past_deadline="clicked_ticket_past_deadline"
     />
+    <TicketStatsReportModal
+      :all_ticket_rows_data="all_possible_ticket_table_rows"
+    />
+    
   </div>
 </template>
 
@@ -142,19 +148,21 @@ import store from '../store/store.js';
 import NewVulnModal from '@/components/NewVulnModal.vue'
 import DataTable from "vue-materialize-datatable";
 import DisplayVulnTicketInfoModal from '@/components/DisplayVulnTicketInfoModal.vue'
+import TicketStatsReportModal from '@/components/TicketStatsReportModal.vue'
 
 export default {
   name: 'AppBody',
   components: {
     NewVulnModal,
     "datatable": DataTable,
-    DisplayVulnTicketInfoModal
+    DisplayVulnTicketInfoModal,
+    TicketStatsReportModal
   },
   props: {
   },
   methods: {
     openReports: function openReports() {
-      console.log("DEBUG: in openReports function");
+      this.$bvModal.show("ticket-stats-report-modal");
     },
     updated_tickets_displayed_by_criticality() {
       //
@@ -443,9 +451,16 @@ export default {
                 status: ticket_obj["status"]["description"],
                 patching_group: additional_information_for_ticket_obj["patching_group"],
                 priority: additional_information_for_ticket_obj["priority_level"],
+
                 day_ticket_created: additional_information_for_ticket_obj["day_ticket_created"].toDateString(),
+                day_ticket_created_datetime_object: additional_information_for_ticket_obj["day_ticket_created"],
+
                 ticket_due_date: additional_information_for_ticket_obj["ticket_due_date"].toDateString(),
+                ticket_due_date_datetime_object: additional_information_for_ticket_obj["ticket_due_date"],
+
                 ticket_closing_date: additional_information_for_ticket_obj["ticket_closing_date"],
+                ticket_closing_date_datetime_obj: additional_information_for_ticket_obj["ticket_closing_date_datetime_obj"],
+
                 past_deadline: (additional_information_for_ticket_obj["is_past_deadline"] ? "Yes" : "No")
               }
               //
@@ -463,7 +478,7 @@ export default {
               // OK we added the ticket. Updating the record of used ticket ids appropriately
               this.$store.state.displayed_table_ticket_ids.push(ticket_obj["id"]);
               //
-              // Now need to check if we can actually add it to the filtered rows right now 
+              // Now need to check if it has the desired criticality & we can actually add it to the filtered rows right now 
               if (this.selected_filtering_options == null || this.selected_filtering_options == new_ticket_row.priority) {
 
                 this.filtered_ticket_table_rows.unshift(new_ticket_row);

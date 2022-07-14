@@ -136,10 +136,6 @@ export default new Vuex.Store({
                 method: "GET",
                 })
                 .then((resp) => {
-                    // Creating test stuff
-                    console.log("DEBUG -- the ticket info received from backend is = ");
-                    console.log(resp.data);
-                    console.log();
 
                     state.all_tickets_list = resp.data["tickets"];
                     //
@@ -281,6 +277,7 @@ export default new Vuex.Store({
                                     // Need to now determine if the ticket remained open or closed past due date
                                     var ticket_is_past_deadline = false;
                                     var ticket_closing_date_string = "N/A";        // default value indicating it is not applicable
+                                    var ticket_closing_date_datetime_obj = null;
                                     //
                                     if (individual_ticket_resp.data["ticket"]["status"]["description"] == "Open") {
                                         // The ticket is currently open
@@ -292,6 +289,8 @@ export default new Vuex.Store({
                                         var ticket_closing_timestamp = individual_ticket_resp.data["ticket"]["updatedAt"]["timestamp"];
                                         var ticket_closing_date = new Date(ticket_closing_timestamp * 1000); // the "* 1000" is to convert seconds to milliseconds
                                         ticket_is_past_deadline = ticket_closing_date > patch_deadline_date;
+
+                                        ticket_closing_date_datetime_obj = ticket_closing_date;
                                         ticket_closing_date_string = ticket_closing_date.toDateString();
                                     }
                                     //
@@ -307,6 +306,7 @@ export default new Vuex.Store({
                                         day_ticket_created: ticket_creation_date,
                                         ticket_due_date: patch_deadline_date,
                                         ticket_closing_date: ticket_closing_date_string,
+                                        ticket_closing_date_datetime_obj: ticket_closing_date_datetime_obj,
                                         is_past_deadline: ticket_is_past_deadline
                                     }
                                     //
