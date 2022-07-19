@@ -20,8 +20,9 @@ Therefore a free and open vulnerability-handling tracker tool is needed. *VulnTr
 # Technology Stack
 
 ## Frontend:
-- Vue.JS framework with Bootstrap Vue components
-- Axios for making HTTP requests to the backend through its API
+- [Vue.JS](https://vuejs.org) framework with [Bootstrap Vue](https://bootstrap-vue.org) components
+- [Axios](https://axios-http.com) for making HTTP requests to the backend through its API to read and edit tickets' settings
+- [vue-chartjs](https://vue-chartjs.org): a powerful framework for making graphs with Chart.js and Vue.js
 
 ## Backend:
 
