@@ -21,6 +21,7 @@ Therefore a free and open vulnerability-handling tracker tool is needed. *VulnTr
 
 ## Frontend:
 - Vue.JS framework with Bootstrap Vue components
+- Axios for making HTTP requests to the backend through its API
 
 ## Backend:
 
