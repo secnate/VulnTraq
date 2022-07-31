@@ -1,7 +1,8 @@
 # VulnTraq
 This is the Github repository for VulnTraq, a free open-source prototype of a vulnerability management tool for small and medium-size enterprises. This was Nathan's Practicum project for completing Georgia Tech's Masters in Information Security. This project was completed during the Summer of 2022
 
-[Click Here](https://youtu.be/pyRpI-hPn_4) to view a demo
+- [Click Here](https://youtu.be/pyRpI-hPn_4) to view the demo \[the slides are available [here](https://github.com/secnate/VulnTraq/blob/main/Presentation%20Slides.pdf)\]
+- [Click Here](https://github.com/secnate/VulnTraq/blob/main/Final%20Report.pdf) to view the Final Report
 
 # Mission
 Many organizations, especially smaller and medium-sized ones, have resorted to keeping track of their vulnerability management programs’ information and states in documents shared among their staff. These are typically Excel spreadsheets shared between multiple staffers on a shared drive and specify information regarding unpatched vulnerabilities, any and all tickets created, opened, and closed, patching due dates, and other relevant information. 
